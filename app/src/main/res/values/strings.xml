@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MindsetAPP</string>
+    <string name="complete_assignment">Doorgaan</string>
+    <string name="redo_assignment">Opnieuw</string>
+    <string name="read_aloud">Voorlezen</string>
+    <string name="help">Help</string>
+    <string name="title_activity_main">Vraag</string>
+    <string name="loaded">Programma opgestart</string>
+    <string name="timer_description">Stopwatch</string>
+    <string name="timer_text">Finish</string>
+    <string name="timer_value">0.0 seconden</string>
+
+</resources>

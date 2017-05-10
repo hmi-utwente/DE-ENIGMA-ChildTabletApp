@@ -1,4 +1,4 @@
-package nl.utwente.hmi.tabletmindsetapp;
+package nl.utwente.hmi.deenigmachildtabletapp;
 
 import android.app.AlarmManager;
 import android.app.Application;

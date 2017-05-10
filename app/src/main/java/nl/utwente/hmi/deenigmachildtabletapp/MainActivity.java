@@ -1,4 +1,4 @@
-package nl.utwente.hmi.tabletmindsetapp;
+package nl.utwente.hmi.deenigmachildtabletapp;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -26,7 +26,6 @@ import android.widget.TextView;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,17 +38,17 @@ import static nl.utwente.hmi.middleware.helpers.JsonNodeBuilders.object;
 import nl.utwente.hmi.middleware.Middleware;
 import nl.utwente.hmi.middleware.MiddlewareListener;
 import nl.utwente.hmi.middleware.worker.AbstractWorker;
-import nl.utwente.hmi.tabletmindsetapp.command.Command;
-import nl.utwente.hmi.tabletmindsetapp.command.JSONCommandParser;
-import nl.utwente.hmi.tabletmindsetapp.command.ShowAssignment;
-import nl.utwente.hmi.tabletmindsetapp.command.ShowBallButtons;
-import nl.utwente.hmi.tabletmindsetapp.command.ShowButtons;
+import nl.utwente.hmi.deenigmachildtabletapp.command.Command;
+import nl.utwente.hmi.deenigmachildtabletapp.command.JSONCommandParser;
+import nl.utwente.hmi.deenigmachildtabletapp.command.ShowAssignment;
+import nl.utwente.hmi.deenigmachildtabletapp.command.ShowBallButtons;
+import nl.utwente.hmi.deenigmachildtabletapp.command.ShowButtons;
 
-import nl.utwente.hmi.tabletmindsetapp.command.ShowCountdown;
-import nl.utwente.hmi.tabletmindsetapp.command.ShowSlider;
-import nl.utwente.hmi.tabletmindsetapp.command.ShowTimer;
-import nl.utwente.hmi.tabletmindsetapp.widgets.VerticalSeekBar;
-import nl.utwente.hmi.tabletmindsetapp.widgets.VerticalSeekBarWrapper;
+import nl.utwente.hmi.deenigmachildtabletapp.command.ShowCountdown;
+import nl.utwente.hmi.deenigmachildtabletapp.command.ShowSlider;
+import nl.utwente.hmi.deenigmachildtabletapp.command.ShowTimer;
+import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
+import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
 
 public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBarChangeListener {
 

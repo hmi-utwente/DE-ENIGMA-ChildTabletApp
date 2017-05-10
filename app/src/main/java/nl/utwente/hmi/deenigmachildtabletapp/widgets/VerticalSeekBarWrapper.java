@@ -1,4 +1,4 @@
-package nl.utwente.hmi.tabletmindsetapp.widgets;
+package nl.utwente.hmi.deenigmachildtabletapp.widgets;
 
 /*
  *    Copyright (C) 2015 Haruki Hasegawa

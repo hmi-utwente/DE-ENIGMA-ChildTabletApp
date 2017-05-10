@@ -33,7 +33,7 @@
  */
 /*============================================================================*/
 
-package nl.utwente.hmi.tabletmindsetapp.widgets;
+package nl.utwente.hmi.deenigmachildtabletapp.widgets;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -51,7 +51,7 @@ import android.view.ViewParent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nl.utwente.hmi.tabletmindsetapp.R;
+import nl.utwente.hmi.deenigmachildtabletapp.R;
 
 public class VerticalSeekBar extends AppCompatSeekBar {
     public static final int ROTATION_ANGLE_CW_90 = 90;

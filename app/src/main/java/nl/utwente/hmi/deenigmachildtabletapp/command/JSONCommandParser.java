@@ -1,4 +1,4 @@
-package nl.utwente.hmi.tabletmindsetapp.command;
+package nl.utwente.hmi.deenigmachildtabletapp.command;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

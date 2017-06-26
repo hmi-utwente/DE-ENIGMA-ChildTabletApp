@@ -1,0 +1,8 @@
+This app is used both for the Child Tablet and the Wizard Tablet for the therapist.
+
+There is line that needs to be changed in the AssignmentApplicaiton.java file, line 53.
+For the child app it should be:
+middleware = new STOMPMiddleware("192.168.1.62",61613,"/topic/CHtablet.command","/topic/tablet.feedback");
+
+For the wizard app it should be:
+middleware = new STOMPMiddleware("192.168.1.62",61613,"/topic/ADtablet.command","/topic/tablet.feedback");

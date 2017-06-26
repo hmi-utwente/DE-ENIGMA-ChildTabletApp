@@ -15,15 +15,14 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
-
+import android.widget.*;
 import com.fasterxml.jackson.databind.JsonNode;
+import nl.utwente.hmi.deenigmachildtabletapp.command.*;
+import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
+import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
+import nl.utwente.hmi.middleware.Middleware;
+import nl.utwente.hmi.middleware.MiddlewareListener;
+import nl.utwente.hmi.middleware.worker.AbstractWorker;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -31,24 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-
-import static nl.utwente.hmi.middleware.helpers.JsonNodeBuilders.array;
 import static nl.utwente.hmi.middleware.helpers.JsonNodeBuilders.object;
-
-import nl.utwente.hmi.middleware.Middleware;
-import nl.utwente.hmi.middleware.MiddlewareListener;
-import nl.utwente.hmi.middleware.worker.AbstractWorker;
-import nl.utwente.hmi.deenigmachildtabletapp.command.Command;
-import nl.utwente.hmi.deenigmachildtabletapp.command.JSONCommandParser;
-import nl.utwente.hmi.deenigmachildtabletapp.command.ShowAssignment;
-import nl.utwente.hmi.deenigmachildtabletapp.command.ShowBallButtons;
-import nl.utwente.hmi.deenigmachildtabletapp.command.ShowButtons;
-
-import nl.utwente.hmi.deenigmachildtabletapp.command.ShowCountdown;
-import nl.utwente.hmi.deenigmachildtabletapp.command.ShowSlider;
-import nl.utwente.hmi.deenigmachildtabletapp.command.ShowTimer;
-import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
-import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
 
 public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBarChangeListener {
 
@@ -624,7 +606,7 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 	 */
 	private void hideAllViews(){
 		assignmentView.setVisibility(View.INVISIBLE);
-		buttonsView.setVisibility(View.INVISIBLE);
+		//buttonsView.setVisibility(View.INVISIBLE);
 		sliderView.setVisibility(View.INVISIBLE);
 		timerView.setVisibility(View.INVISIBLE);
 		countdownView.setVisibility(View.INVISIBLE);
@@ -815,7 +797,7 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 				JsonNode jn = object(
 						"buttonPress", object(
 								"buttonID", bID
-						)
+						) //JSON: {"buttonPress" : {"buttonID" : "START_SYSTEM" }}
 				).end();
 				middleware.sendData(jn);
 				hideAllViews();

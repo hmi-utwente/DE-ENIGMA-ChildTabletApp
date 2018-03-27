@@ -69,8 +69,8 @@ public class JSONCommandParser {
 			retCommand = parseShowButtons(jn.path("showButtons"));
 		} else if(!jn.path("showAssignment").isMissingNode()){
 			retCommand = parseAssignment(jn.path("showAssignment"));
-		} else if(!jn.path("showSlider").isMissingNode()){
-			retCommand = parseSlider(jn.path("showSlider"));
+		} else if(!jn.path("showClickablePicture").isMissingNode()){
+			retCommand = parseClickablePicture(jn.path("showClickablePicture"));
 		} else if(!jn.path("showTimer").isMissingNode()){
             retCommand = parseTimer(jn.path("showTimer"));
         } else if(!jn.path("showCountdown").isMissingNode()){
@@ -229,6 +229,56 @@ public class JSONCommandParser {
 
 		return new ShowAssignment(id, text, imageFile, buttonText, showHelp);
 	}
+
+
+	/**
+	 * Parses the showClickablePicture command. Creates the Command if succesful, but throws an exception if the JSON format is incorrect
+	 * @param showClickablePicture the JSON that contains the properties for this command
+	 * @return an instantiated Command object
+	 * @throws CommandParseException if the format does not match
+	 */
+	private Command parseClickablePicture(JsonNode showClickablePicture) throws CommandParseException {
+		//retrieve the id of this assignment
+		if(!showClickablePicture.path("id").isTextual()){
+			throw new CommandParseException("showClickablePicture command should have a 'id' property of type string");
+		}
+		String id = showClickablePicture.get("id").asText();
+
+		//retrieve the text of this assignment
+		if(!showClickablePicture.path("text").isTextual()){
+			throw new CommandParseException("showClickablePicture command should have a 'text' property of type string");
+		}
+		String text = showClickablePicture.get("text").asText();
+
+		//retrieve the imageFile of this assignment
+		if(!showClickablePicture.path("imageFile").isTextual()){
+			throw new CommandParseException("showClickablePicture command should have a 'imageFile' property of type string");
+		}
+		String imageFile = showClickablePicture.get("imageFile").asText();
+
+		//retrieve the buttons to be shown
+		if(!showClickablePicture.path("clickableAreas").isArray() || showClickablePicture.path("clickableAreas").size() == 0){
+			throw new CommandParseException("showClickablePicture command should have a 'clickableAreas' property of type array with at least 1 entry");
+		}
+
+		//we use a LinkedHashMap here, because it preserves the order in which the buttons were inserted
+		Map<String, String> clickableAreas = new LinkedHashMap<String, String>();
+
+		//add all clickable areas from the array
+		// clickable area format: x;y;h;v;label
+		// x, y : top-left position value of the area; h, w : height and width; label: label of the area
+		for(JsonNode btn : showClickablePicture.path("clickableAreas")){
+			if(!btn.path("id").isTextual()){
+				throw new CommandParseException("showClickablePicture command should have a 'clickableAreas' array containing objects with an 'id' of type string");
+			}
+			if(!btn.path("value").isTextual()){
+				throw new CommandParseException("showClickablePicture command should have a 'clickableAreas' array containing objects with a 'value' of type string with the format: <x;y;h;v;label>");
+			}
+			clickableAreas.put(btn.get("id").asText(), btn.get("value").asText());
+		}
+		return new ShowClickablePicture(id, text, imageFile, clickableAreas);
+	}
+
 
 	/**
 	 * Parses the showSlider command. Creates the Command if succesful, but throws an exception if the JSON format is incorrect

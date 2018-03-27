@@ -31,14 +31,14 @@ public class AssignmentApplication extends Application {
 		//this lets us restart after a serious crash
 		intent = PendingIntent.getActivity(getBaseContext(), 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_ONE_SHOT);
 
-		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler(){
-			@Override
-			public void uncaughtException(Thread thread, Throwable ex) {
-				AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-				mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 5000, intent);//give wifi some time to reconnect
-				System.exit(2);
-			}
-		});
+//		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler(){
+//			@Override
+//			public void uncaughtException(Thread thread, Throwable ex) {
+//				AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//				mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 5000, intent);//give wifi some time to reconnect
+//				System.exit(2);
+//			}
+//		});
 
 		//allow network communication (stomp) in main thread
 		//TODO: move stomp communication to separate thread
@@ -50,7 +50,7 @@ public class AssignmentApplication extends Application {
 		//TODO: we actually need some kind of reconnection-daemon, if the connection fails for some reason... however this will probably require quite a bit of redesign
 		//load and initiate the middleware we use for communication throughout this app
 		//for our mindset experiments the PC is given static ip 192.168.0.10
-		middleware = new STOMPMiddleware("192.168.1.62",61613,"/topic/CHtablet.command","/topic/tablet.feedback");
+		middleware = new STOMPMiddleware("192.168.1.62",61613,"/topic/adult_tablet.command","/topic/adult_tablet.feedback");
 
 	}
 }

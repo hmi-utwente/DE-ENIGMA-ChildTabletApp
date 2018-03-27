@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">MindsetAPP</string>
+    <string name="app_name">DEENIGMAAPP</string>
     <string name="complete_assignment">Doorgaan</string>
     <string name="redo_assignment">Opnieuw</string>
     <string name="read_aloud">Voorlezen</string>

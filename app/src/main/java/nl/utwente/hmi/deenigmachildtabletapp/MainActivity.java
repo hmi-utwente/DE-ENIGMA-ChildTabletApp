@@ -1,22 +1,32 @@
 package nl.utwente.hmi.deenigmachildtabletapp;
 
+import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.*;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import nl.utwente.hmi.deenigmachildtabletapp.command.*;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
@@ -36,10 +46,12 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 
 	private MediaPlayer voicePlayer;
 	private MediaPlayer noisePlayer;
-    
+
 	private View assignmentView;
+	private View clickableView;
 	private TextView assignmentTextView;
 	private ImageView imageView;
+	private ImageView clickableImage;
 	private Button completeAssignmentButton;
 	private Button readAloudButton;
 
@@ -100,6 +112,12 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+        //allow network communication (stomp) in main thread
+        //TODO: move stomp communication to separate thread
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -116,6 +134,10 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 		imageView = (ImageView) findViewById(R.id.image_view);
 		completeAssignmentButton = (Button) findViewById(R.id.complete_assignment_button);
 		readAloudButton = (Button) findViewById(R.id.read_aloud_button);
+
+		//get the view elements we want to change for the clickable picture view
+		clickableView = (RelativeLayout) findViewById(R.id.clickable_view);
+		clickableImage = (ImageView) findViewById(R.id.clickable_view_image);
 
 		//everything we need for the button view
 		buttonsView = (RelativeLayout) findViewById(R.id.buttons_view);
@@ -251,8 +273,10 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 							| View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
 							| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
-					if(c instanceof ShowAssignment){
-						showAssignment((ShowAssignment)c);
+					if(c instanceof ShowAssignment) {
+						showAssignment((ShowAssignment) c);
+					} else if(c instanceof ShowClickablePicture){
+						showClickablePicture((ShowClickablePicture)c);
 					} else if(c instanceof ShowButtons){
 						showButtons((ShowButtons)c);
 					} else if(c instanceof ShowSlider){
@@ -436,6 +460,94 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 	}
 
 	/**
+	 * Displays a clickable picture to the user. Might contain a text
+	 * @param scp
+	 */
+	private void showClickablePicture(ShowClickablePicture scp){
+		hideAllViews();
+
+        if(!"".equals(scp.getImageFile())){
+            int imageResourceID = getApplicationContext().getResources().getIdentifier(scp.getImageFile(), "drawable", getApplicationContext().getPackageName());
+			clickableImage.setImageResource(imageResourceID);
+
+			clickableImage.setVisibility(View.VISIBLE);
+		} else {
+			clickableImage.setVisibility(View.INVISIBLE);
+		}
+        clickableView.setVisibility(View.VISIBLE);
+
+        // Define the clickable areas (pixel values: x coordinate, y coordinate, width, height) and assign a label to it
+        List<String> listClickableAreas =  new ArrayList<>();
+		for(Entry<String, String> ca : scp.getClickableAreas().entrySet()){
+            listClickableAreas.add(ca.getValue());
+		}
+
+//		clickableAreasImage.setClickableAreas(listClickableAreas);
+
+        clickableImage.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN){
+
+                    // we need the info on the original and new sizes of the image displayed
+                    // the clickable areas must be taken from the original image but rescale in regard of the display
+                    // keep the real size of the source image
+                    Resources resources = clickableImage.getContext().getResources();
+                    BitmapFactory.Options bounds = new BitmapFactory.Options();
+                    bounds.inJustDecodeBounds = true;
+                    BitmapFactory.decodeResource(resources, getApplicationContext().getResources().getIdentifier(scp.getImageFile(), "drawable", getApplicationContext().getPackageName()), bounds);
+                    float sourceImageHeight = (float) bounds.outHeight;
+                    float sourceImageWidth = (float) bounds.outWidth;
+
+                    float displayedHeight = (float) clickableImage.getHeight();
+                    float displayedWidth = (float) clickableImage.getWidth();
+
+                    float scaleX = displayedWidth/sourceImageWidth;
+                    float scaleY = displayedHeight/sourceImageHeight;
+
+                    if (scaleX ==0 || scaleY ==0){
+                        // if the image is not yet displayed on the screen
+                        Log.i("clickable_debug", "the picture is not shown on the tablet yet, please wait");
+                    }else{
+						Log.i("clickable_debug","Touch coordinates : " + String.valueOf(event.getX()) + "x" + String.valueOf(event.getY()));
+
+						float eventx = event.getX() / scaleX;
+                        float eventy = event.getY() / scaleY;
+
+                        for (int ii=0; ii < listClickableAreas.size(); ii++) {
+                            String[] caFields = listClickableAreas.get(ii).split(";");
+                            int areax = Integer.parseInt(caFields[0]);
+                            int areay = Integer.parseInt(caFields[1]);
+                            int areah = Integer.parseInt(caFields[2]);
+                            int areaw = Integer.parseInt(caFields[3]);
+                            String label = caFields[4];
+							Log.i("clickable_debug","fields : " + String.valueOf(areax) + "; " + String.valueOf(areay) + "; " + String.valueOf(areah) + "; " + String.valueOf(areaw));
+
+                            if (eventx >= areax && eventx < areax + areaw && eventy >= areay && eventy < areay + areah) {
+                                Log.i("clickable_debug", "the clicked area is : " + label);
+
+                                JsonNode jn = object(
+                                        "clickableAreaPressed", object(
+                                                "areaID", label
+                                        ) //JSON: {"buttonPress" : {"buttonID" : "START_SYSTEM" }}
+                                ).end();
+                                middleware.sendData(jn);
+
+                                // we only take in account one area. If there are overlaps, only the first one is returned.
+                                break;
+                            }
+                        }
+                    }
+
+                }
+                return true;
+            }
+        });
+
+
+	}
+
+	/**
 	 * Displays a slider to the user.
 	 * @param ss the slider to show
 	 */
@@ -606,7 +718,8 @@ public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBar
 	 */
 	private void hideAllViews(){
 		assignmentView.setVisibility(View.INVISIBLE);
-		//buttonsView.setVisibility(View.INVISIBLE);
+		clickableView.setVisibility(View.INVISIBLE);
+		// buttonsView.setVisibility(View.INVISIBLE);
 		sliderView.setVisibility(View.INVISIBLE);
 		timerView.setVisibility(View.INVISIBLE);
 		countdownView.setVisibility(View.INVISIBLE);

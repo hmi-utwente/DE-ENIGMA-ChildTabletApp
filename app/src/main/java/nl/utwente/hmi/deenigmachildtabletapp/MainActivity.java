@@ -13,8 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
-import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -42,7 +41,7 @@ import java.util.Map.Entry;
 
 import static nl.utwente.hmi.middleware.helpers.JsonNodeBuilders.object;
 
-public class MainActivity extends ActionBarActivity implements SeekBar.OnSeekBarChangeListener {
+public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 	private MediaPlayer voicePlayer;
 	private MediaPlayer noisePlayer;

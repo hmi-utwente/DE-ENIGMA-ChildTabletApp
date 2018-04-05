@@ -4,7 +4,7 @@ android {
     compileSdkVersion 23
     buildToolsVersion '25.0.0'
     defaultConfig {
-        applicationId "nl.utwente.hmi.tabletmindsetapp"
+        applicationId "nl.utwente.hmi.deenigmachildtabletapp"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1

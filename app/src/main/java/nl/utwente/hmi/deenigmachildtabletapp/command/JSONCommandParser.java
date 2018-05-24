@@ -67,6 +67,8 @@ public class JSONCommandParser {
 		//try to parse either of two possible command types: showButtons or showAssignment
 		if(!jn.path("showButtons").isMissingNode()){
 			retCommand = parseShowButtons(jn.path("showButtons"));
+		} else if(!jn.path("showPersistentButtons").isMissingNode()){
+			retCommand = parseShowPersistentButtons(jn.path("showPersistentButtons"));
 		} else if(!jn.path("showAssignment").isMissingNode()){
 			retCommand = parseAssignment(jn.path("showAssignment"));
 		} else if(!jn.path("showClickablePicture").isMissingNode()){
@@ -343,7 +345,7 @@ public class JSONCommandParser {
 	 * @param showButtons the JsonNode containing the buttons definitions
 	 * @return an instantiated Command
 	 * @throws CommandParseException if the JSON does not follow the correct format
-     */
+	 */
 	private Command parseShowButtons(JsonNode showButtons) throws CommandParseException {
 		//retrieve the text to be shown on screen
 		if(!showButtons.path("text").isTextual()){
@@ -368,11 +370,52 @@ public class JSONCommandParser {
 				throw new CommandParseException("showButtons command should have a 'buttons' array containing objects with a 'value' of type string");
 			}
 
-			buttons.put(btn.get("id").asText(), btn.get("value").asText());
+			String id = btn.get("id").asText();
+			if("".equals(btn.get("id").asText())){
+				id = "rnd" + Math.floor(Math.random()*10000000);
+			}
+
+			buttons.put(id, btn.get("value").asText());
 		}
 
 		//finally, create
 		return new ShowButtons(text, buttons);
+	}
+
+	/**
+	 * Attempt to parse the showPersistentButtons command. Will create a ShowPersistentButtons if succesful, or throw a CommandParseException if there is any mistake in the command format
+	 * @param showPersistentButtons the JsonNode containing the buttons definitions
+	 * @return an instantiated Command
+	 * @throws CommandParseException if the JSON does not follow the correct format
+	 */
+	private Command parseShowPersistentButtons(JsonNode showPersistentButtons) throws CommandParseException {
+		//retrieve the buttons to be shown
+		if(!showPersistentButtons.path("buttons").isArray() || showPersistentButtons.path("buttons").size() == 0){
+			throw new CommandParseException("showPersistentButtons command should have a 'buttons' property of type array with at least 1 entry");
+		}
+
+		//we use a LinkedHashMap here, because it preserves the order in which the buttons were inserted
+		Map<String, String> buttons = new LinkedHashMap<String, String>();
+
+		//add all buttons from the array
+		for(JsonNode btn : showPersistentButtons.path("buttons")){
+			if(!btn.path("id").isTextual()){
+				throw new CommandParseException("showPersistentButtons command should have a 'buttons' array containing objects with an 'id' of type string");
+			}
+			if(!btn.path("value").isTextual()){
+				throw new CommandParseException("showPersistentButtons command should have a 'buttons' array containing objects with a 'value' of type string");
+			}
+
+			String id = btn.get("id").asText();
+			if("".equals(btn.get("id").asText())){
+				id = "rnd" + Math.floor(Math.random()*10000000);
+			}
+
+			buttons.put(id, btn.get("value").asText());
+		}
+
+		//finally, create
+		return new ShowPersistentButtons(buttons);
 	}
 
 	public class CommandParseException extends Exception {

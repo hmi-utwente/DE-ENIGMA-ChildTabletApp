@@ -1,5 +1,6 @@
 package nl.utwente.hmi.deenigmachildtabletapp;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private Middleware middleware;
 
 	private RelativeLayout buttonsView;
+	private RelativeLayout persistentButtonsView;
 	private RelativeLayout sliderView;
 
 	private TextView timerDescription;
@@ -140,6 +142,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 		//everything we need for the button view
 		buttonsView = (RelativeLayout) findViewById(R.id.buttons_view);
+
+		//everything we need for the persistent button view
+		persistentButtonsView = (RelativeLayout) findViewById(R.id.persistent_buttons_view);
 
 		//what we need for the slider view
 		sliderView = (RelativeLayout) findViewById(R.id.slider_view);
@@ -278,6 +283,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 						showClickablePicture((ShowClickablePicture)c);
 					} else if(c instanceof ShowButtons){
 						showButtons((ShowButtons)c);
+					} else if(c instanceof ShowPersistentButtons){
+						showPersistentButtons((ShowPersistentButtons)c);
 					} else if(c instanceof ShowSlider){
 						showSlider((ShowSlider)c);
 					} else if(c instanceof ShowTimer){
@@ -422,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 	/**
 	 * Displays an assignment to the user. Might contain text, a button and an image
-	 * @param sa
+	 * @param sa the assignment to show
 	 */
 	private void showAssignment(ShowAssignment sa){
 		hideAllViews();
@@ -462,6 +469,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	 * Displays a clickable picture to the user. Might contain a text
 	 * @param scp
 	 */
+	@SuppressLint("ClickableViewAccessibility")
 	private void showClickablePicture(ShowClickablePicture scp){
 		hideAllViews();
 
@@ -676,40 +684,105 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	 * Displays buttons to the user. The ShowButtons command contains a list of button texts and their return values.
 	 * //TODO: extend this to allow images, and multiple toggles, etc..
 	 * @param sb
-     */
+	 */
 	private void showButtons(ShowButtons sb){
 		hideAllViews();
 
-        //create a new vertical oriented layout, which will hold the text and buttons
-        LinearLayout linView = new LinearLayout(this);
-        linView.setOrientation(LinearLayout.VERTICAL);
-        LayoutParams linViewParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        
-        //create and add question and all answers to the interface
-        TextView q = new TextView(this);
-        q.setText(sb.getText());
-        q.setTextSize(30);
-        q.setPadding(0, 0, 0, 66);
-        LayoutParams qParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        linView.addView(q, qParams);
-        
-        for(Entry<String, String> button : sb.getButtons().entrySet()){
-        	Button answerBtn = new Button(this);
-        	answerBtn.setText(button.getValue());
-        	answerBtn.setTextSize(22);
-        	answerBtn.setPadding(0, 48, 0, 48);
-        	answerBtn.setTag(button.getKey());
-        	answerBtn.setOnClickListener(buttonSubmit);
-			LinearLayout.LayoutParams answerBtnParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			answerBtnParams.setMargins(0, 22, 0, 0);
-			//answerBtn.setLayoutParams(answerBtnParams);
-        	linView.addView(answerBtn,answerBtnParams);
-        }
-        
-        //now add the view to the app :)
-        buttonsView.removeAllViews();
-        buttonsView.addView(linView, linViewParams);
+		//create a new vertical oriented layout, which will hold the text and buttons
+		LinearLayout linView = new LinearLayout(this);
+		linView.setOrientation(LinearLayout.VERTICAL);
+		LayoutParams linViewParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+
+		//create and add question and all answers to the interface
+		TextView q = new TextView(this);
+		q.setText(sb.getText());
+		q.setTextSize(22);
+		q.setPadding(100, 0, 0, 33);
+		LayoutParams qParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		linView.addView(q, qParams);
+
+		for(Entry<String, String> button : sb.getButtons().entrySet()){
+			if("blankSpace".equals(button.getValue())){
+				Space space = new Space(this);
+				space.setMinimumHeight(32);
+				linView.addView(space);
+			} else {
+				Button answerBtn = new Button(this);
+				answerBtn.setText(button.getValue());
+				answerBtn.setTextSize(16);
+				answerBtn.setPadding(0, 26, 0, 26);
+				answerBtn.setTag(button.getKey());
+				answerBtn.setOnClickListener(buttonSubmit);
+				LinearLayout.LayoutParams answerBtnParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+				answerBtnParams.setMargins(100, 5, 100, 0);
+				//answerBtn.setLayoutParams(answerBtnParams);
+				linView.addView(answerBtn, answerBtnParams);
+			}
+		}
+
+		//now add the view to the app :)
+		buttonsView.removeAllViews();
+		buttonsView.addView(linView, linViewParams);
 		buttonsView.setVisibility(View.VISIBLE);
+	}
+
+
+	/**
+	 * Displays persistent buttons to the user on the bottom of the screen. These do not reset when the rest of the screen is cleared! The ShowPersistentButtons command contains a list of button texts and their return values.
+	 * //TODO: extend this to allow images, and multiple toggles, etc..
+	 * @param spb
+	 */
+	private void showPersistentButtons(ShowPersistentButtons spb){
+		//hideAllViews();
+		GridLayout gridLayout = new GridLayout(this);
+		Map<String, String> buttons = spb.getButtons();
+
+		int total = buttons.size();
+		int column =  3;
+		int row = total / column;
+
+		gridLayout.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
+		gridLayout.setColumnCount(column);
+		gridLayout.setRowCount(row + 1);
+		int i = 0;
+		int c = 0;
+		int r = 0;
+		for(Entry<String, String> button : buttons.entrySet()){
+			if(c == column)
+			{
+				c = 0;
+				r++;
+			}
+
+			Button answerBtn = new Button(this);
+			answerBtn.setText(button.getValue());
+			answerBtn.setTextSize(16);
+			answerBtn.setPadding(0, 26, 0, 26);
+			answerBtn.setTag(button.getKey());
+			answerBtn.setOnClickListener(buttonSubmit);
+
+			gridLayout.addView(answerBtn, i);
+
+			GridLayout.LayoutParams answerBtnParams = new GridLayout.LayoutParams();
+			answerBtnParams.setMargins(5, 5, 5, 5);
+			answerBtnParams.setGravity(Gravity.CENTER);
+			answerBtnParams.columnSpec = GridLayout.spec(c);
+			answerBtnParams.rowSpec = GridLayout.spec(r);
+			answerBtnParams.height = 100;
+			answerBtnParams.width = 420;
+
+			answerBtn.setLayoutParams(answerBtnParams);
+
+			i++;
+			c++;
+		}
+
+		LayoutParams gridLayoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+
+		//now add the view to the app :)
+		persistentButtonsView.removeAllViews();
+		persistentButtonsView.addView(gridLayout, gridLayoutParams);
+		persistentButtonsView.setVisibility(View.VISIBLE);
 	}
 
 	/**

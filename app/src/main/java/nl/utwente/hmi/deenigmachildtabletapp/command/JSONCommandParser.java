@@ -3,6 +3,8 @@ package nl.utwente.hmi.deenigmachildtabletapp.command;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,6 +71,8 @@ public class JSONCommandParser {
 			retCommand = parseShowButtons(jn.path("showButtons"));
 		} else if(!jn.path("showPersistentButtons").isMissingNode()){
 			retCommand = parseShowPersistentButtons(jn.path("showPersistentButtons"));
+		} else if(!jn.path("showImageButtonGrid").isMissingNode()){
+			retCommand = parseShowImageButtonGrid(jn.path("showImageButtonGrid"));
 		} else if(!jn.path("showAssignment").isMissingNode()){
 			retCommand = parseAssignment(jn.path("showAssignment"));
 		} else if(!jn.path("showClickablePicture").isMissingNode()){
@@ -380,6 +384,51 @@ public class JSONCommandParser {
 
 		//finally, create
 		return new ShowButtons(text, buttons);
+	}
+
+	/**
+	 * Attempt to parse the showImageButtonGrid command. Will create a ShowImageButtonGrid if succesful, or throw a CommandParseException if there is any mistake in the command format
+	 * @param showImageButtonGrid the JsonNode containing the buttons definitions
+	 * @return an instantiated Command
+	 * @throws CommandParseException if the JSON does not follow the correct format
+	 */
+	private Command parseShowImageButtonGrid(JsonNode showImageButtonGrid) throws CommandParseException {
+		//retrieve the text to be shown on screen
+		if(!showImageButtonGrid.path("text").isTextual()){
+			throw new CommandParseException("showImageButtonGrid command should have a 'text' property of type string");
+		}
+		String text = showImageButtonGrid.get("text").asText();
+
+		//retrieve the buttons to be shown
+		if(!showImageButtonGrid.path("imageButtons").isArray() || showImageButtonGrid.path("imageButtons").size() == 0){
+			throw new CommandParseException("showImageButtonGrid command should have a 'imageButtons' property of type array with at least 1 entry");
+		}
+
+		//we use a LinkedList here, because it preserves the order in which the buttons were inserted
+		List<ImgButton> imageButtons = new LinkedList<ImgButton>();
+
+		//add all buttons from the array
+		for(JsonNode btn : showImageButtonGrid.path("imageButtons")){
+			if(!btn.path("id").isTextual()){
+				throw new CommandParseException("showImageButtonGrid command should have a 'imageButtons' array containing objects with an 'id' of type string");
+			}
+			if(!btn.path("value").isTextual()){
+				throw new CommandParseException("showImageButtonGrid command should have a 'imageButtons' array containing objects with a 'value' of type string");
+			}
+			if(!btn.path("img").isTextual()){
+				throw new CommandParseException("showImageButtonGrid command should have a 'imageButtons' array containing objects with an 'img' of type string");
+			}
+
+			String id = btn.get("id").asText();
+			if("".equals(btn.get("id").asText())){
+				id = "rnd" + Math.floor(Math.random()*10000000);
+			}
+
+			imageButtons.add(new ImgButton(id, btn.get("value").asText(), btn.get("img").asText()));
+		}
+
+		//finally, create
+		return new ShowImageButtonGrid(text, imageButtons);
 	}
 
 	/**

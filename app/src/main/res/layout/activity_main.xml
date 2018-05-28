@@ -353,13 +353,20 @@
 
 	</RelativeLayout>
 
-	<RelativeLayout
-		android:id="@+id/persistent_buttons_view"
-		android:layout_alignParentBottom="true"
-		android:layout_centerHorizontal="true"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content">
-	</RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/persistent_buttons_view"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/image_button_grid_view"
+        android:layout_centerHorizontal="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </RelativeLayout>
 
 	<RelativeLayout
 		android:id="@+id/slider_view"

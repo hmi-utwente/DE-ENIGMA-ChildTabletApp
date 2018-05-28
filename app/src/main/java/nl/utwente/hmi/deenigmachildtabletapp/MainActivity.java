@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.TextUtils;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 	private RelativeLayout buttonsView;
 	private RelativeLayout persistentButtonsView;
+	private RelativeLayout imageButtonGridView;
 	private RelativeLayout sliderView;
 
 	private TextView timerDescription;
@@ -145,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 		//everything we need for the persistent button view
 		persistentButtonsView = (RelativeLayout) findViewById(R.id.persistent_buttons_view);
+
+		imageButtonGridView = (RelativeLayout) findViewById(R.id.image_button_grid_view);
 
 		//what we need for the slider view
 		sliderView = (RelativeLayout) findViewById(R.id.slider_view);
@@ -285,6 +289,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 						showButtons((ShowButtons)c);
 					} else if(c instanceof ShowPersistentButtons){
 						showPersistentButtons((ShowPersistentButtons)c);
+					} else if(c instanceof ShowImageButtonGrid){
+						showImageButtonGrid((ShowImageButtonGrid)c);
 					} else if(c instanceof ShowSlider){
 						showSlider((ShowSlider)c);
 					} else if(c instanceof ShowTimer){
@@ -470,7 +476,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	 * @param scp
 	 */
 	@SuppressLint("ClickableViewAccessibility")
-	private void showClickablePicture(ShowClickablePicture scp){
+	private void showClickablePicture(final ShowClickablePicture scp){
 		hideAllViews();
 
         if(!"".equals(scp.getImageFile())){
@@ -484,7 +490,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         clickableView.setVisibility(View.VISIBLE);
 
         // Define the clickable areas (pixel values: x coordinate, y coordinate, width, height) and assign a label to it
-        List<String> listClickableAreas =  new ArrayList<>();
+         final List<String> listClickableAreas =  new ArrayList<>();
 		for(Entry<String, String> ca : scp.getClickableAreas().entrySet()){
             listClickableAreas.add(ca.getValue());
 		}
@@ -728,6 +734,85 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
 	/**
+	 * Displays buttons to the user. The ShowButtons command contains a list of button texts and their return values.
+	 * //TODO: extend this to allow images, and multiple toggles, etc..
+	 * @param sb
+	 */
+	private void showImageButtonGrid(ShowImageButtonGrid ibg){
+		hideAllViews();
+
+		//create a new vertical oriented layout, which will hold the text and buttons
+		LinearLayout linView = new LinearLayout(this);
+		linView.setOrientation(LinearLayout.VERTICAL);
+		LayoutParams linViewParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+
+		GridLayout gridLayout = new GridLayout(this);
+		List<ImgButton> buttons = ibg.getButtons();
+
+		int total = buttons.size();
+		int column =  2;
+		int row = total / column;
+
+		gridLayout.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
+		gridLayout.setColumnCount(column);
+		gridLayout.setRowCount(row + 1);
+		int i = 0;
+		int c = 0;
+		int r = 0;
+		for(ImgButton button : buttons){
+			if(c == column)
+			{
+				c = 0;
+				r++;
+			}
+			int imageResourceID = getApplicationContext().getResources().getIdentifier(button.getImg(), "drawable", getApplicationContext().getPackageName());
+
+			Button iBtn = new Button(this);
+			iBtn.setBackground(ContextCompat.getDrawable(getApplicationContext(), imageResourceID));
+			iBtn.setText(button.getText());
+			iBtn.setTextSize(16);
+			iBtn.setPadding(0, 26, 0, 26);
+			iBtn.setTag(button.getId());
+			iBtn.setOnClickListener(buttonSubmit);
+
+			GridLayout.LayoutParams iBtnParams = new GridLayout.LayoutParams();
+			iBtnParams.setMargins(5, 5, 5, 5);
+			iBtnParams.setGravity(Gravity.CENTER);
+			iBtnParams.columnSpec = GridLayout.spec(c);
+			iBtnParams.rowSpec = GridLayout.spec(r);
+			iBtnParams.width = 400;
+			iBtnParams.height = 320;
+
+			iBtn.setLayoutParams(iBtnParams);
+
+			gridLayout.addView(iBtn, i);
+
+			i++;
+			c++;
+		}
+
+		LayoutParams gridLayoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+
+		//now add the view to the app :)
+		linView.removeAllViews();
+		linView.addView(gridLayout, gridLayoutParams);
+
+		//create and add question and all answers to the interface
+		TextView text = new TextView(this);
+		text.setText(ibg.getText());
+		text.setTextSize(22);
+		text.setPadding(100, 0, 0, 33);
+		text.setGravity(Gravity.CENTER);
+		LayoutParams qParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		linView.addView(text, qParams);
+
+		//now add the view to the app :)
+		buttonsView.removeAllViews();
+		buttonsView.addView(linView, linViewParams);
+		buttonsView.setVisibility(View.VISIBLE);
+	}
+
+	/**
 	 * Displays persistent buttons to the user on the bottom of the screen. These do not reset when the rest of the screen is cleared! The ShowPersistentButtons command contains a list of button texts and their return values.
 	 * //TODO: extend this to allow images, and multiple toggles, etc..
 	 * @param spb
@@ -792,6 +877,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		assignmentView.setVisibility(View.INVISIBLE);
 		clickableView.setVisibility(View.INVISIBLE);
 		// buttonsView.setVisibility(View.INVISIBLE);
+		imageButtonGridView.setVisibility(View.INVISIBLE);
 		sliderView.setVisibility(View.INVISIBLE);
 		timerView.setVisibility(View.INVISIBLE);
 		countdownView.setVisibility(View.INVISIBLE);

@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -744,6 +745,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		//create a new vertical oriented layout, which will hold the text and buttons
 		LinearLayout linView = new LinearLayout(this);
 		linView.setOrientation(LinearLayout.VERTICAL);
+		linView.setGravity(Gravity.CENTER_VERTICAL);
 		LayoutParams linViewParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
 		GridLayout gridLayout = new GridLayout(this);
@@ -756,6 +758,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		gridLayout.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
 		gridLayout.setColumnCount(column);
 		gridLayout.setRowCount(row + 1);
+
 		int i = 0;
 		int c = 0;
 		int r = 0;
@@ -767,21 +770,29 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			}
 			int imageResourceID = getApplicationContext().getResources().getIdentifier(button.getImg(), "drawable", getApplicationContext().getPackageName());
 
+			Drawable imgFile = ContextCompat.getDrawable(getApplicationContext(), imageResourceID);
+
+			int oWidth = imgFile.getIntrinsicWidth();
+			int oHeight = imgFile.getIntrinsicHeight();
+			int nWidth = 650;
+			double scaleFactor = (double) nWidth / oWidth;
+			int nHeight = (int) Math.round(oHeight * scaleFactor);
+
 			Button iBtn = new Button(this);
-			iBtn.setBackground(ContextCompat.getDrawable(getApplicationContext(), imageResourceID));
-			iBtn.setText(button.getText());
+			iBtn.setBackground(imgFile);
+			//iBtn.setText(button.getText());
 			iBtn.setTextSize(16);
-			iBtn.setPadding(0, 26, 0, 26);
+            iBtn.setPadding(0, 0, 0, 0);
 			iBtn.setTag(button.getId());
 			iBtn.setOnClickListener(buttonSubmit);
 
 			GridLayout.LayoutParams iBtnParams = new GridLayout.LayoutParams();
-			iBtnParams.setMargins(5, 5, 5, 5);
+			iBtnParams.setMargins(22, 142, 22, 22);
 			iBtnParams.setGravity(Gravity.CENTER);
 			iBtnParams.columnSpec = GridLayout.spec(c);
 			iBtnParams.rowSpec = GridLayout.spec(r);
-			iBtnParams.width = 400;
-			iBtnParams.height = 320;
+			iBtnParams.width = nWidth;
+			iBtnParams.height = nHeight;
 
 			iBtn.setLayoutParams(iBtnParams);
 
@@ -800,16 +811,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		//create and add question and all answers to the interface
 		TextView text = new TextView(this);
 		text.setText(ibg.getText());
-		text.setTextSize(22);
-		text.setPadding(100, 0, 0, 33);
+		text.setTextSize(42);
+		text.setPadding(0, 100, 0, 33);
 		text.setGravity(Gravity.CENTER);
-		LayoutParams qParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		linView.addView(text, qParams);
+		LayoutParams tParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		linView.addView(text, tParams);
 
 		//now add the view to the app :)
-		buttonsView.removeAllViews();
-		buttonsView.addView(linView, linViewParams);
-		buttonsView.setVisibility(View.VISIBLE);
+        imageButtonGridView.removeAllViews();
+        imageButtonGridView.addView(linView, linViewParams);
+        imageButtonGridView.setVisibility(View.VISIBLE);
 	}
 
 	/**

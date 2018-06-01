@@ -2,6 +2,7 @@ package nl.utwente.hmi.deenigmachildtabletapp.command;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -426,6 +427,9 @@ public class JSONCommandParser {
 
 			imageButtons.add(new ImgButton(id, btn.get("value").asText(), btn.get("img").asText()));
 		}
+
+		//we should store in random order
+		Collections.shuffle(imageButtons);
 
 		//finally, create
 		return new ShowImageButtonGrid(text, imageButtons);

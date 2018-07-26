@@ -737,7 +737,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	/**
 	 * Displays buttons to the user. The ShowButtons command contains a list of button texts and their return values.
 	 * //TODO: extend this to allow images, and multiple toggles, etc..
-	 * @param sb
+	 * @param ibg
 	 */
 	private void showImageButtonGrid(ShowImageButtonGrid ibg){
 		hideAllViews();
@@ -864,8 +864,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			answerBtnParams.setGravity(Gravity.CENTER);
 			answerBtnParams.columnSpec = GridLayout.spec(c);
 			answerBtnParams.rowSpec = GridLayout.spec(r);
-			answerBtnParams.height = 100;
-			answerBtnParams.width = 420;
+			answerBtnParams.width = dp2px(200);
 
 			answerBtn.setLayoutParams(answerBtnParams);
 
@@ -879,6 +878,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		persistentButtonsView.removeAllViews();
 		persistentButtonsView.addView(gridLayout, gridLayoutParams);
 		persistentButtonsView.setVisibility(View.VISIBLE);
+	}
+
+	public int dp2px(int dp) {
+		float density = getApplicationContext().getResources()
+				.getDisplayMetrics()
+				.density;
+		return Math.round((float) dp * density);
 	}
 
 	/**

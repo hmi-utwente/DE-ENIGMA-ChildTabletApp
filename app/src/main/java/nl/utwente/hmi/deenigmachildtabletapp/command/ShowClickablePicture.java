@@ -7,11 +7,13 @@ public class ShowClickablePicture implements Command {
 	private String id;
 	private String text;
 	private String imageFile;
+	private String imageFileDisabled;
 	private Map<String, String> clickableAreas;
 
-	public ShowClickablePicture(String id, String text, String imageFile, Map<String, String> clickableAreas) {
+	public ShowClickablePicture(String id, String text, String imageFile, String imageFileDisabled, Map<String, String> clickableAreas) {
 		this.setId(id);
 		this.setImageFile(imageFile);
+		this.setImageFileDisabled(imageFileDisabled);
 		this.setClickableAreas(clickableAreas);
 	}
 
@@ -33,6 +35,14 @@ public class ShowClickablePicture implements Command {
 
 	public String getImageFile() {
 		return imageFile;
+	}
+
+	public void setImageFileDisabled(String imageFileDisabled) {
+		this.imageFileDisabled = imageFileDisabled;
+	}
+
+	public String getImageFileDisabled() {
+		return imageFileDisabled;
 	}
 
 	public void setImageFile(String imageFile) {

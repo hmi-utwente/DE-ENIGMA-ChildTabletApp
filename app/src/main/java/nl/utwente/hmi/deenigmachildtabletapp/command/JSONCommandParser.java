@@ -78,6 +78,8 @@ public class JSONCommandParser {
 			retCommand = parseAssignment(jn.path("showAssignment"));
 		} else if(!jn.path("showClickablePicture").isMissingNode()){
 			retCommand = parseClickablePicture(jn.path("showClickablePicture"));
+		} else if(!jn.path("setBackgroundColor").isMissingNode()){
+			retCommand = parseBackgroundColor(jn.path("setBackgroundColor"));
 		} else if(!jn.path("showTimer").isMissingNode()){
             retCommand = parseTimer(jn.path("showTimer"));
         } else if(!jn.path("showCountdown").isMissingNode()){
@@ -263,6 +265,9 @@ public class JSONCommandParser {
 		}
 		String imageFile = showClickablePicture.get("imageFile").asText();
 
+		//retrieve the imageFileDisabled of this assignment (optional
+		String imageFileDisabled = showClickablePicture.get("imageFileDisabled").asText("empty");
+
 		//retrieve the buttons to be shown
 		if(!showClickablePicture.path("clickableAreas").isArray() || showClickablePicture.path("clickableAreas").size() == 0){
 			throw new CommandParseException("showClickablePicture command should have a 'clickableAreas' property of type array with at least 1 entry");
@@ -283,9 +288,18 @@ public class JSONCommandParser {
 			}
 			clickableAreas.put(btn.get("id").asText(), btn.get("value").asText());
 		}
-		return new ShowClickablePicture(id, text, imageFile, clickableAreas);
+		return new ShowClickablePicture(id, text, imageFile, imageFileDisabled, clickableAreas);
 	}
 
+	private Command parseBackgroundColor(JsonNode setBackgroundColor) throws CommandParseException {
+		//retrieve the text of this assignment
+		if(!setBackgroundColor.path("color").isTextual()){
+			throw new CommandParseException("setBackgroundColor command should have a 'color' property of type string");
+		}
+		String color = setBackgroundColor.get("color").asText();
+
+		return new SetBackgroundColor(color);
+	}
 
 	/**
 	 * Parses the showSlider command. Creates the Command if succesful, but throws an exception if the JSON format is incorrect
@@ -386,7 +400,6 @@ public class JSONCommandParser {
 		//finally, create
 		return new ShowButtons(text, buttons);
 	}
-
 	/**
 	 * Attempt to parse the showImageButtonGrid command. Will create a ShowImageButtonGrid if succesful, or throw a CommandParseException if there is any mistake in the command format
 	 * @param showImageButtonGrid the JsonNode containing the buttons definitions

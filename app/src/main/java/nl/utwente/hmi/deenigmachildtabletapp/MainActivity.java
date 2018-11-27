@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private MediaPlayer voicePlayer;
 	private MediaPlayer noisePlayer;
 
+	private View backgroundView;
 	private View assignmentView;
 	private View clickableView;
 	private TextView assignmentTextView;
@@ -131,6 +132,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         
 		setContentView(R.layout.activity_main);
+
+		//the topmost parent container
+		backgroundView = (RelativeLayout) findViewById(R.id.background_view);
 
 		//get the view elements we want to change for the assignment view
 		assignmentView = (RelativeLayout) findViewById(R.id.assignment_view);
@@ -286,6 +290,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 						showAssignment((ShowAssignment) c);
 					} else if(c instanceof ShowClickablePicture){
 						showClickablePicture((ShowClickablePicture)c);
+					} else if(c instanceof SetBackgroundColor){
+						setBackgroundColor((SetBackgroundColor)c);
 					} else if(c instanceof ShowButtons){
 						showButtons((ShowButtons)c);
 					} else if(c instanceof ShowPersistentButtons){
@@ -547,6 +553,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                                 ).end();
                                 middleware.sendData(jn);
 
+
+								int imageResourceID = getApplicationContext().getResources().getIdentifier(scp.getImageFileDisabled(), "drawable", getApplicationContext().getPackageName());
+								clickableImage.setImageResource(imageResourceID);
+								clickableImage.setOnTouchListener(null);
                                 // we only take in account one area. If there are overlaps, only the first one is returned.
                                 break;
                             }
@@ -559,6 +569,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         });
 
 
+	}
+
+
+	private void setBackgroundColor(final SetBackgroundColor sbc) {
+		backgroundView.setBackgroundColor(Color.parseColor(sbc.getColor()));
 	}
 
 	/**

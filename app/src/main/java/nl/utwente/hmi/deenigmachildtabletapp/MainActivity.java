@@ -277,15 +277,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 				@Override
 				public void run() {
-					//try to go fullscreen
-					setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-					getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-							| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-							| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-							| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-							| View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-							| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-
 					if(c instanceof ShowAssignment) {
 						showAssignment((ShowAssignment) c);
 					} else if(c instanceof ShowClickablePicture){
@@ -307,6 +298,15 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 					} else if(c instanceof ShowBallButtons){
 						showBallButtons((ShowBallButtons)c);
 					}
+
+					//try to go fullscreen
+					setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+					getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+							| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+							| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+							| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+							| View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+							| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 				}
 			});
 

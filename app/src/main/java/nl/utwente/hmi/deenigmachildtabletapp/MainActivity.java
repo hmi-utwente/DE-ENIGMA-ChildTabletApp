@@ -3,6 +3,7 @@ package nl.utwente.hmi.deenigmachildtabletapp;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -739,15 +740,28 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 				txt.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
 				linView.addView(txt);
 			}else {
+				//this is for color tints, instead of just setting the background color.. this retains the regular pressed animation events etc.
+				int[][] states = new int[][] {
+						new int[] { android.R.attr.state_pressed},
+						new int[] { android.R.attr.state_enabled}
+				};
+
+				int[] colors = new int[] {
+						Color.GREEN,
+						Color.parseColor(tBtn.getColor())
+				};
+
+				ColorStateList colLst = new ColorStateList(states, colors);
+
 				Button answerBtn = new Button(this);
 				answerBtn.setText(tBtn.getText());
-				answerBtn.setBackgroundColor(Color.parseColor(tBtn.getColor()));
+				answerBtn.setBackgroundTintList(colLst);
 				answerBtn.setTextSize(16);
 				answerBtn.setPadding(0, 26, 0, 26);
 				answerBtn.setTag(id);
 				answerBtn.setOnClickListener(buttonSubmit);
 				LinearLayout.LayoutParams answerBtnParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-				answerBtnParams.setMargins(100, 12, 100, 0);
+				answerBtnParams.setMargins(100, 5, 100, 0);
 				//answerBtn.setLayoutParams(answerBtnParams);
 				linView.addView(answerBtn, answerBtnParams);
 			}
@@ -878,9 +892,22 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 			TextButton tBtn = button.getValue();
 
+			//this is for color tints, instead of just setting the background color.. this retains the regular pressed animation events etc.
+			int[][] states = new int[][] {
+					new int[] { android.R.attr.state_pressed},
+					new int[] { android.R.attr.state_enabled}
+			};
+
+			int[] colors = new int[] {
+					Color.GREEN,
+					Color.parseColor(tBtn.getColor())
+			};
+
+			ColorStateList colLst = new ColorStateList(states, colors);
+
 			Button answerBtn = new Button(this);
 			answerBtn.setText(tBtn.getText());
-			answerBtn.setBackgroundColor(Color.parseColor(tBtn.getColor()));
+			answerBtn.setBackgroundTintList(colLst);
 			answerBtn.setTextSize(16);
 			answerBtn.setPadding(0, 26, 0, 26);
 			answerBtn.setTag(button.getKey());
@@ -889,7 +916,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			gridLayout.addView(answerBtn, i);
 
 			GridLayout.LayoutParams answerBtnParams = new GridLayout.LayoutParams();
-			answerBtnParams.setMargins(7, 10, 7, 10);
+			answerBtnParams.setMargins(5,5,5,5);
 			answerBtnParams.setGravity(Gravity.CENTER);
 			answerBtnParams.columnSpec = GridLayout.spec(c);
 			answerBtnParams.rowSpec = GridLayout.spec(r);

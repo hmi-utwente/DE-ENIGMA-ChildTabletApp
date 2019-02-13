@@ -1,13 +1,14 @@
 package nl.utwente.hmi.deenigmachildtabletapp.command;
 
+import java.util.List;
 import java.util.Map;
 
 public class ShowButtons implements Command {
 
 	private String text;
-	private Map<String, TextButton> buttons;
+	private List<TextButton> buttons;
 
-	public ShowButtons(String text, Map<String, TextButton> buttons) {
+	public ShowButtons(String text, List<TextButton> buttons) {
 		this.setText(text);
 		this.setButtons(buttons);
 	}
@@ -24,11 +25,11 @@ public class ShowButtons implements Command {
 		this.text = text;
 	}
 
-	public Map<String, TextButton> getButtons(){
+	public List<TextButton> getButtons(){
 		return buttons;
 	}
 	
-	public void setButtons(Map<String, TextButton> buttons) {
+	public void setButtons(List<TextButton> buttons) {
 		this.buttons = buttons;
 	}
 

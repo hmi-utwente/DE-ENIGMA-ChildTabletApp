@@ -723,9 +723,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		LayoutParams qParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		linView.addView(q, qParams);
 
-		for(Entry<String, TextButton> button : sb.getButtons().entrySet()){
-			TextButton tBtn = button.getValue();
-			String id = button.getKey();
+		for(TextButton tBtn : sb.getButtons()){
+			String id = tBtn.getId();
 
 			if("blankSpace".equals(tBtn.getText())){
 				Space space = new Space(this);

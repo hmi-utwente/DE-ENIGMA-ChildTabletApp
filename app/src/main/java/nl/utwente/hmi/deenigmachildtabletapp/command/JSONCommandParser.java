@@ -378,7 +378,7 @@ public class JSONCommandParser {
 		}
 
 		//we use a LinkedHashMap here, because it preserves the order in which the buttons were inserted
-		Map<String, TextButton> buttons = new LinkedHashMap<String, TextButton>();
+		List<TextButton> buttons = new LinkedList<TextButton>();
 
 		//add all buttons from the array
 		for(JsonNode btn : showButtons.path("buttons")){
@@ -403,7 +403,7 @@ public class JSONCommandParser {
 
 			TextButton tBtn = new TextButton(id, value, color);
 
-			buttons.put(id, tBtn);
+			buttons.add(tBtn);
 		}
 
 		//finally, create

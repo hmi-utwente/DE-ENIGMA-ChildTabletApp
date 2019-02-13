@@ -725,17 +725,27 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 		for(Entry<String, TextButton> button : sb.getButtons().entrySet()){
 			TextButton tBtn = button.getValue();
+			String id = button.getKey();
+
 			if("blankSpace".equals(tBtn.getText())){
 				Space space = new Space(this);
 				space.setMinimumHeight(32);
 				linView.addView(space);
-			} else {
+			} else if("textOnly".equals(id)) {
+				TextView txt = new TextView(this);
+				txt.setText(tBtn.getText());
+				txt.setTextSize(16);
+				txt.setGravity(Gravity.CENTER);
+				txt.setPadding(0,0,0,20);
+				txt.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+				linView.addView(txt);
+			}else {
 				Button answerBtn = new Button(this);
 				answerBtn.setText(tBtn.getText());
 				answerBtn.setBackgroundColor(Color.parseColor(tBtn.getColor()));
 				answerBtn.setTextSize(16);
 				answerBtn.setPadding(0, 26, 0, 26);
-				answerBtn.setTag(button.getKey());
+				answerBtn.setTag(id);
 				answerBtn.setOnClickListener(buttonSubmit);
 				LinearLayout.LayoutParams answerBtnParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 				answerBtnParams.setMargins(100, 12, 100, 0);

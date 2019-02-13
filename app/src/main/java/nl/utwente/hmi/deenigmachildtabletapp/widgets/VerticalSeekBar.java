@@ -281,7 +281,8 @@ public class VerticalSeekBar extends AppCompatSeekBar {
         }
     }
 
-    private synchronized void setProgress(int progress, boolean fromUser) {
+    @Override
+    public synchronized void setProgress(int progress, boolean fromUser) {
         if (mMethodSetProgress == null) {
             try {
                 Method m;

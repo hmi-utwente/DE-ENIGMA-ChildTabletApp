@@ -54,8 +54,8 @@ public class AssignmentApplication extends Application {
 		//for our mindset experiments the PC is given static ip 192.168.0.10
 		// IP Pauline's computer: 192.168.1.62
 		// IP snozzle computer : 192.168.1.132
-		middleware = new STOMPMiddleware("192.168.0.22",61613,"/topic/adult_tablet.command","/topic/adult_tablet.feedback");
-		//middleware = new STOMPMiddleware("192.168.0.22",61613,"/topic/child_tablet.command","/topic/child_tablet.feedback");
+		//middleware = new STOMPMiddleware("192.168.0.22",61613,"/topic/adult_tablet.command","/topic/adult_tablet.feedback");
+		middleware = new STOMPMiddleware("192.168.0.22",61613,"/topic/child_tablet.command","/topic/child_tablet.feedback");
 		//middleware = new ROSMiddleware("ws://192.168.0.22:9090","/child_tablet_feedback","/child_tablet_command");
 		//middleware = new ROSMiddleware("ws://192.168.0.22:9090","/adult_tablet_feedback","/adult_tablet_command");
 

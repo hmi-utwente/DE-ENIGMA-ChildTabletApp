@@ -5,9 +5,9 @@ import java.util.Map;
 public class ShowButtons implements Command {
 
 	private String text;
-	private Map<String, String> buttons;
+	private Map<String, TextButton> buttons;
 
-	public ShowButtons(String text, Map<String, String> buttons) {
+	public ShowButtons(String text, Map<String, TextButton> buttons) {
 		this.setText(text);
 		this.setButtons(buttons);
 	}
@@ -24,11 +24,11 @@ public class ShowButtons implements Command {
 		this.text = text;
 	}
 
-	public Map<String, String> getButtons(){
+	public Map<String, TextButton> getButtons(){
 		return buttons;
 	}
 	
-	public void setButtons(Map<String, String> buttons) {
+	public void setButtons(Map<String, TextButton> buttons) {
 		this.buttons = buttons;
 	}
 

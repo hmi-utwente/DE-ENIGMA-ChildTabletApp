@@ -4,9 +4,9 @@ import java.util.Map;
 
 public class ShowPersistentButtons implements Command {
 
-	private Map<String, String> buttons;
+	private Map<String, TextButton> buttons;
 
-	public ShowPersistentButtons(Map<String, String> buttons) {
+	public ShowPersistentButtons(Map<String, TextButton> buttons) {
 		this.setButtons(buttons);
 	}
 
@@ -14,11 +14,11 @@ public class ShowPersistentButtons implements Command {
 		return "NOID";
 	}
 
-	public Map<String, String> getButtons(){
+	public Map<String, TextButton> getButtons(){
 		return buttons;
 	}
 	
-	public void setButtons(Map<String, String> buttons) {
+	public void setButtons(Map<String, TextButton> buttons) {
 		this.buttons = buttons;
 	}
 

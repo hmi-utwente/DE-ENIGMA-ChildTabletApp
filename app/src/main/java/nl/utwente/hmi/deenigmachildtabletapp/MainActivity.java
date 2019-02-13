@@ -723,20 +723,22 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		LayoutParams qParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		linView.addView(q, qParams);
 
-		for(Entry<String, String> button : sb.getButtons().entrySet()){
-			if("blankSpace".equals(button.getValue())){
+		for(Entry<String, TextButton> button : sb.getButtons().entrySet()){
+			TextButton tBtn = button.getValue();
+			if("blankSpace".equals(tBtn.getText())){
 				Space space = new Space(this);
 				space.setMinimumHeight(32);
 				linView.addView(space);
 			} else {
 				Button answerBtn = new Button(this);
-				answerBtn.setText(button.getValue());
+				answerBtn.setText(tBtn.getText());
+				answerBtn.setBackgroundColor(Color.parseColor(tBtn.getColor()));
 				answerBtn.setTextSize(16);
 				answerBtn.setPadding(0, 26, 0, 26);
 				answerBtn.setTag(button.getKey());
 				answerBtn.setOnClickListener(buttonSubmit);
 				LinearLayout.LayoutParams answerBtnParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-				answerBtnParams.setMargins(100, 5, 100, 0);
+				answerBtnParams.setMargins(100, 12, 100, 0);
 				//answerBtn.setLayoutParams(answerBtnParams);
 				linView.addView(answerBtn, answerBtnParams);
 			}
@@ -846,7 +848,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private void showPersistentButtons(ShowPersistentButtons spb){
 		//hideAllViews();
 		GridLayout gridLayout = new GridLayout(this);
-		Map<String, String> buttons = spb.getButtons();
+		Map<String, TextButton> buttons = spb.getButtons();
 
 		int total = buttons.size();
 		int column =  3;
@@ -858,15 +860,18 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		int i = 0;
 		int c = 0;
 		int r = 0;
-		for(Entry<String, String> button : buttons.entrySet()){
+		for(Entry<String, TextButton> button : buttons.entrySet()){
 			if(c == column)
 			{
 				c = 0;
 				r++;
 			}
 
+			TextButton tBtn = button.getValue();
+
 			Button answerBtn = new Button(this);
-			answerBtn.setText(button.getValue());
+			answerBtn.setText(tBtn.getText());
+			answerBtn.setBackgroundColor(Color.parseColor(tBtn.getColor()));
 			answerBtn.setTextSize(16);
 			answerBtn.setPadding(0, 26, 0, 26);
 			answerBtn.setTag(button.getKey());
@@ -875,7 +880,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			gridLayout.addView(answerBtn, i);
 
 			GridLayout.LayoutParams answerBtnParams = new GridLayout.LayoutParams();
-			answerBtnParams.setMargins(5, 5, 5, 5);
+			answerBtnParams.setMargins(7, 10, 7, 10);
 			answerBtnParams.setGravity(Gravity.CENTER);
 			answerBtnParams.columnSpec = GridLayout.spec(c);
 			answerBtnParams.rowSpec = GridLayout.spec(r);

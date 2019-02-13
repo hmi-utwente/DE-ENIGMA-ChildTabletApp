@@ -378,7 +378,7 @@ public class JSONCommandParser {
 		}
 
 		//we use a LinkedHashMap here, because it preserves the order in which the buttons were inserted
-		Map<String, String> buttons = new LinkedHashMap<String, String>();
+		Map<String, TextButton> buttons = new LinkedHashMap<String, TextButton>();
 
 		//add all buttons from the array
 		for(JsonNode btn : showButtons.path("buttons")){
@@ -394,7 +394,16 @@ public class JSONCommandParser {
 				id = "rnd" + Math.floor(Math.random()*10000000);
 			}
 
-			buttons.put(id, btn.get("value").asText());
+			String value = btn.get("value").asText();
+
+			String color = "lightgrey";
+			if(btn.path("color").isTextual()){
+				color = btn.get("color").asText();
+			}
+
+			TextButton tBtn = new TextButton(id, value, color);
+
+			buttons.put(id, tBtn);
 		}
 
 		//finally, create
@@ -461,7 +470,7 @@ public class JSONCommandParser {
 		}
 
 		//we use a LinkedHashMap here, because it preserves the order in which the buttons were inserted
-		Map<String, String> buttons = new LinkedHashMap<String, String>();
+		Map<String, TextButton> buttons = new LinkedHashMap<String, TextButton>();
 
 		//add all buttons from the array
 		for(JsonNode btn : showPersistentButtons.path("buttons")){
@@ -477,7 +486,16 @@ public class JSONCommandParser {
 				id = "rnd" + Math.floor(Math.random()*10000000);
 			}
 
-			buttons.put(id, btn.get("value").asText());
+			String value = btn.get("value").asText();
+
+			String color = "lightgrey";
+			if(btn.path("color").isTextual()){
+				color = btn.get("color").asText();
+			}
+
+			TextButton tBtn = new TextButton(id, value, color);
+
+			buttons.put(id, tBtn);
 		}
 
 		//finally, create

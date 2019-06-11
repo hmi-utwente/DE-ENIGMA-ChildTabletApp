@@ -7,7 +7,7 @@
     <string name="read_aloud">Voorlezen</string>
     <string name="help">Help</string>
     <string name="title_activity_main">Vraag</string>
-    <string name="loaded">Programma opgestart</string>
+    <string name="loaded">Programma opgestart - APOLLO</string>
     <string name="timer_description">Stopwatch</string>
     <string name="timer_text">Finish</string>
     <string name="timer_value">0.0 seconden</string>

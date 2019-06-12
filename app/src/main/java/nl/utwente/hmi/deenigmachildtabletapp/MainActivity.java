@@ -1,15 +1,12 @@
 package nl.utwente.hmi.deenigmachildtabletapp;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -27,13 +24,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import nl.utwente.hmi.deenigmachildtabletapp.command.*;
+import nl.utwente.hmi.deenigmachildtabletapp.communication.CommunicationManager;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
-import nl.utwente.hmi.middleware.Middleware;
 import nl.utwente.hmi.middleware.MiddlewareListener;
 import nl.utwente.hmi.middleware.worker.AbstractWorker;
 
@@ -59,8 +57,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private Button completeAssignmentButton;
 	private Button readAloudButton;
 
-	private Middleware middleware;
-
 	private RelativeLayout buttonsView;
 	private RelativeLayout persistentButtonsView;
 	private RelativeLayout imageButtonGridView;
@@ -85,6 +81,22 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private List<Button> ballButtons = new ArrayList<Button>();
 	private Button ballButtonsContinueButton;
 	private RelativeLayout ballButtonsView;
+
+	private LinearLayout settingsView;
+	private TextView connectionStatus;
+
+	private RadioGroup middlewareSelection;
+	private RadioButton ROSSelection;
+	private RadioButton APOLLOSelection;
+
+	private RadioGroup modeSelection;
+	private RadioButton childSelection;
+	private RadioButton adultSelection;
+
+	private EditText ipAddress;
+
+	private Button connectBtn;
+
 
 	private static final int BTN_NEUTRAL = Color.rgb(222,222,222);
 	private static final int BTN_SELECTED = Color.rgb(22,222,0);
@@ -114,6 +126,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private static final int TEXT_SIZE_VARIATION = 6;
 	private TextView lowText;
 	private TextView highText;
+	private CommunicationManager commMngr;
+	private boolean settingsActive;
+	private CommunicationManager.AvailableModes selectedMode;
+	private CommunicationManager.AvailableMiddlewares selectedMiddleware;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +152,23 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 		//the topmost parent container
 		backgroundView = (RelativeLayout) findViewById(R.id.background_view);
+
+		//for the settings screen
+		settingsView = (LinearLayout)findViewById(R.id.settings_view);
+		connectionStatus = (TextView)findViewById(R.id.connectionStatus);
+
+		middlewareSelection = (RadioGroup)findViewById(R.id.radio_middleware);
+		ROSSelection = (RadioButton)findViewById(R.id.radio_ros);
+		APOLLOSelection = (RadioButton)findViewById(R.id.radio_apollo);
+
+		modeSelection = (RadioGroup)findViewById(R.id.radio_mode);
+		childSelection = (RadioButton)findViewById(R.id.radio_child);
+		adultSelection = (RadioButton)findViewById(R.id.radio_adult);
+
+		ipAddress = (EditText)findViewById(R.id.ipaddress);
+
+		connectBtn = (Button)findViewById(R.id.connect);
+
 
 		//get the view elements we want to change for the assignment view
 		assignmentView = (RelativeLayout) findViewById(R.id.assignment_view);
@@ -189,15 +222,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		//we use this to parse incoming commands
 		jsonParser = new JSONCommandParser();
 
-		//retrieve the middleware instance
-		middleware = ((AssignmentApplication) getApplicationContext()).getMiddleware();
+		//create our communication manager
+		this.commMngr = new CommunicationManager();
+		//commMngr.start();
 
 		//init the worker thread which will process new Data from the middleware
 		CommandReceiver cr = new CommandReceiver();
 		new Thread(cr).start();
 
 		//finally, tell the middleware where to send incoming data
-		middleware.addListener(cr);
+		commMngr.addListener(cr);
 	}
 
 
@@ -249,14 +283,19 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		continueBtn.setEnabled(true);
 	}
 
+
 	/**
 	 * Receive a command from the middleware and display the correct information on the screen
 	 * @author davisond
 	 *
 	 */
-	private class CommandReceiver extends AbstractWorker implements MiddlewareListener {
-		@Override
+	public class CommandReceiver extends AbstractWorker implements MiddlewareListener {
+
+        @Override
 		public void receiveData(JsonNode jsonNode) {
+			if(settingsActive){
+				return;
+			}
 			this.addDataToQueue(jsonNode);
 		}
 
@@ -552,7 +591,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                                                 "areaID", label
                                         ) //JSON: {"buttonPress" : {"buttonID" : "START_SYSTEM" }}
                                 ).end();
-                                middleware.sendData(jn);
+								commMngr.sendData(jn);
 
 
 								int imageResourceID = getApplicationContext().getResources().getIdentifier(scp.getImageFileDisabled(), "drawable", getApplicationContext().getPackageName());
@@ -1029,7 +1068,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 							.with("ID", id)
 							.with("selectedBalls", ballsString)
 					).end();
-			middleware.sendData(jn);
+			commMngr.sendData(jn);
 			hideAllViews();
 		}
 
@@ -1051,7 +1090,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 							"assignmentID", assID
 					)
 			).end();
-			middleware.sendData(jn);
+			commMngr.sendData(jn);
 			hideAllViews();
 		}
 
@@ -1073,7 +1112,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 							"assignmentID", assID
 					)
 			).end();
-			middleware.sendData(jn);
+			commMngr.sendData(jn);
 			hideAllViews();
 		}
 
@@ -1093,7 +1132,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 							"assignmentID", assID
 					)
 			).end();
-			middleware.sendData(jn);
+			commMngr.sendData(jn);
 			//hideAllViews();
 		}
 
@@ -1113,7 +1152,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 								.with("ID", id)
 								.with("value", seekBar.getProgress())
 				).end();
-				middleware.sendData(jn);
+				commMngr.sendData(jn);
 				hideAllViews();
 			}
 		}
@@ -1143,10 +1182,83 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 								"buttonID", bID
 						) //JSON: {"buttonPress" : {"buttonID" : "START_SYSTEM" }}
 				).end();
-				middleware.sendData(jn);
+				commMngr.sendData(jn);
 				hideAllViews();
 			}
 		}
 	};
 
+
+	/**
+	 * Called when a user clicks the connect button to build a new connection with the middleware
+	 */
+	public void connect(View v){
+		this.selectedMode = CommunicationManager.AvailableModes.ADULT;
+		if(modeSelection.getCheckedRadioButtonId() == childSelection.getId()){
+			selectedMode = CommunicationManager.AvailableModes.CHILD;
+		}
+
+		this.selectedMiddleware = CommunicationManager.AvailableMiddlewares.APOLLO;
+		if(middlewareSelection.getCheckedRadioButtonId() == ROSSelection.getId()){
+			selectedMiddleware = CommunicationManager.AvailableMiddlewares.ROS;
+		}
+
+		String ip = ipAddress.getText().toString();
+
+		commMngr.updateConnectionSettings(selectedMode, selectedMiddleware, ip);
+
+		connectBtn.setEnabled(false);
+		commMngr.restart();
+
+		if(!commMngr.isInitialized()){
+			connectBtn.setEnabled(true);
+			connectionStatus.setText("Connection failed...try again");
+		} else {
+			hideKeyboard(this);
+			settingsActive = false;
+			settingsView.setVisibility(View.INVISIBLE);
+			connectBtn.setEnabled(true);
+			showAssignment(new ShowAssignment("init", "Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode", "", "", false));
+		}
+
+		//go back to fullscreen
+		setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+				| View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+	}
+
+	public void toggleConnectionSettings(View v){
+		if(!settingsActive) {
+			if(commMngr.isInitialized()){
+				connectionStatus.setText("Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode");
+			}
+			hideAllViews();
+			setBackgroundColor(new SetBackgroundColor("#ffffff"));
+			buttonsView.setVisibility(View.INVISIBLE);
+			persistentButtonsView.setVisibility(View.INVISIBLE);
+			this.settingsActive = true;
+			settingsView.setVisibility(View.VISIBLE);
+		} else {
+			this.settingsActive = false;
+			settingsView.setVisibility(View.INVISIBLE);
+			if(commMngr.isInitialized()) {
+				showAssignment(new ShowAssignment("init", "Connected to " + selectedMiddleware.toString() + " in " + selectedMode + " mode", "", "", false));
+			}
+		}
+	}
+
+	public static void hideKeyboard(Activity activity) {
+		InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+		//Find the currently focused view, so we can grab the correct window token from it.
+		View view = activity.getCurrentFocus();
+		//If no view currently has focus, create a new one, just so we can grab a window token from it
+		if (view == null) {
+			view = new View(activity);
+		}
+		imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+	}
 }

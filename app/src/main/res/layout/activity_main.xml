@@ -11,12 +11,23 @@
     android:background="#FFFFFF"
     tools:context="nl.utwente.hmi.deenigmachildtabletapp.MainActivity" >
 
+	<TextView
+		android:layout_width="22dp"
+		android:layout_height="22dp"
+		android:gravity="center_horizontal"
+		android:onClick="toggleConnectionSettings"
+		android:clickable="true"
+		android:text="..."
+		android:layout_alignParentTop="true"
+		android:layout_alignParentRight="true"/>
+
 	<RelativeLayout
 		android:id="@+id/assignment_view"
 		android:paddingLeft="@dimen/activity_horizontal_margin"
 		android:paddingRight="@dimen/activity_horizontal_margin"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent">
+		android:layout_height="match_parent"
+		android:visibility="invisible">
 
 		<ImageView
 			android:id="@+id/image_view"
@@ -67,6 +78,71 @@
 			android:maxWidth="150dp"
 			android:onClick="readAloud" />
 	</RelativeLayout>
+
+	<LinearLayout
+		android:id="@+id/settings_view"
+		android:paddingLeft="@dimen/activity_horizontal_margin"
+		android:paddingRight="@dimen/activity_horizontal_margin"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:layout_marginTop="100dp"
+		android:visibility="visible">
+
+		<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/connectionStatus"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Disconnected"/>
+		<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/radio_mode"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="22dp"
+			android:orientation="horizontal">
+			<RadioButton android:id="@+id/radio_child"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Child"/>
+			<RadioButton android:id="@+id/radio_adult"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:checked="true"
+				android:text="Adult"/>
+		</RadioGroup>
+
+		<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/radio_middleware"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:layout_marginTop="22dp">
+			<RadioButton android:id="@+id/radio_ros"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="ROS"/>
+			<RadioButton android:id="@+id/radio_apollo"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:checked="true"
+				android:text="APOLLO/STOMP"/>
+		</RadioGroup>
+
+		<EditText
+			android:id="@+id/ipaddress"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="22dp"
+			android:text="192.168.0.36"/>
+
+		<Button
+			android:id="@+id/connect"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:text="Connect"
+			android:layout_marginTop="22dp"
+			android:onClick="connect" />
+	</LinearLayout>
 
 	<RelativeLayout
 		android:id="@+id/clickable_view"

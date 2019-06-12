@@ -1,25 +1,20 @@
 package nl.utwente.hmi.deenigmachildtabletapp;
 
-import android.app.AlarmManager;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.StrictMode;
-import android.util.Log;
 
 import nl.utwente.hmi.middleware.Middleware;
-import nl.utwente.hmi.middleware.ros.ROSMiddleware;
 import nl.utwente.hmi.middleware.stomp.STOMPMiddleware;
 
 public class AssignmentApplication extends Application {
 
-	private Middleware middleware;
+	//private Middleware middleware;
 	private PendingIntent intent;
 
-	public Middleware getMiddleware(){
-		return middleware;
-	}
+
 
 	@Override
 	public Context getApplicationContext() {
@@ -44,8 +39,8 @@ public class AssignmentApplication extends Application {
 
 		//allow network communication (stomp) in main thread
 		//TODO: move stomp communication to separate thread
-		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-		StrictMode.setThreadPolicy(policy);
+		//StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		//StrictMode.setThreadPolicy(policy);
 
 		//TODO: I couldnt get the dynamic loading through GenericMiddlewareLoader to work (it gave NoClassDefFound errors) so we load the STOMPMIddleware here directly instead :(
 		//TODO: make the ip and port configurable from within the app
@@ -55,7 +50,7 @@ public class AssignmentApplication extends Application {
 		// IP Pauline's computer: 192.168.1.62
 		// IP snozzle computer : 192.168.1.132
 		//middleware = new STOMPMiddleware("192.168.0.22",61613,"/topic/adult_tablet.command","/topic/adult_tablet.feedback");
-		middleware = new STOMPMiddleware("192.168.0.22",61613,"/topic/child_tablet.command","/topic/child_tablet.feedback");
+		//middleware = new STOMPMiddleware("192.168.0.22",61613,"/topic/child_tablet.command","/topic/child_tablet.feedback");
 		//middleware = new ROSMiddleware("ws://192.168.0.22:9090","/child_tablet_feedback","/child_tablet_command");
 		//middleware = new ROSMiddleware("ws://192.168.0.22:9090","/adult_tablet_feedback","/adult_tablet_command");
 

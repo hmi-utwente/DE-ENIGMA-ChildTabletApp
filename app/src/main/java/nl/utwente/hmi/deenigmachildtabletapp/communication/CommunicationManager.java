@@ -37,7 +37,7 @@ public class CommunicationManager {
         this.IPAddress = IPAddress;
     }
 
-    private void initComms(){
+    private synchronized void initComms(){
         if(comms != null) {
             comms.stop();
         }
@@ -58,6 +58,7 @@ public class CommunicationManager {
             Log.i("daniel", "Communication thread started successfully");
 
             for (MiddlewareListener l : listeners) {
+                Log.i("daniel", "Adding listener to thread");
                 comms.addListener(l);
             }
         } else {
@@ -83,11 +84,13 @@ public class CommunicationManager {
         }
     }
 
-    public void addListener(MainActivity.CommandReceiver listener){
+    public synchronized void addListener(MainActivity.CommandReceiver listener){
         //store the listener so we can automagically add it again in case of a restart
+        Log.i("daniel", "Adding listener to manager");
         listeners.add(listener);
 
         if(comms != null && comms.isInitialized()) {
+            Log.i("daniel", "Adding listener to thread");
             comms.addListener(listener);
         }
     }

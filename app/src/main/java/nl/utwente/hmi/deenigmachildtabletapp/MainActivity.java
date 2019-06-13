@@ -1,5 +1,6 @@
 package nl.utwente.hmi.deenigmachildtabletapp;
 
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
@@ -7,6 +8,8 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -14,7 +17,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -30,6 +35,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import nl.utwente.hmi.deenigmachildtabletapp.command.*;
 import nl.utwente.hmi.deenigmachildtabletapp.communication.CommunicationManager;
+import nl.utwente.hmi.deenigmachildtabletapp.widgets.ButtonBlinker;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
 import nl.utwente.hmi.middleware.MiddlewareListener;
@@ -302,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		@Override
 		public void processData(JsonNode jsonNode) {
 
-			Log.d("daniel", "got message: "+jsonNode.toString());
+			Log.d("daniel", "Got message 2: "+jsonNode.toString());
 
 			try {
 				currentCommand = jsonParser.parseJSON(jsonNode);
@@ -803,6 +809,20 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 				answerBtnParams.setMargins(100, 5, 100, 0);
 				//answerBtn.setLayoutParams(answerBtnParams);
 				linView.addView(answerBtn, answerBtnParams);
+
+
+				Blink blink = tBtn.getBlink();
+				if(blink != null && blink.getColors().size() > 0) {
+
+					List<ColorStateList> blinkColors = new ArrayList<ColorStateList>();
+
+					for(String blinkColor : blink.getColors()) {
+						blinkColors.add(new ColorStateList(states, new int[] {Color.GREEN, Color.parseColor(blinkColor)}));
+					}
+
+					ButtonBlinker bb = new ButtonBlinker(answerBtn, blink.getBlinkDuration(), blink.getTotalDuration(), colLst, blinkColors);
+					bb.start();
+				}
 			}
 		}
 
@@ -962,6 +982,19 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			answerBtnParams.width = dp2px(200);
 
 			answerBtn.setLayoutParams(answerBtnParams);
+
+			Blink blink = tBtn.getBlink();
+			if(blink != null && blink.getColors().size() > 0) {
+
+				List<ColorStateList> blinkColors = new ArrayList<ColorStateList>();
+
+				for(String blinkColor : blink.getColors()) {
+					blinkColors.add(new ColorStateList(states, new int[] {Color.GREEN, Color.parseColor(blinkColor)}));
+				}
+
+				ButtonBlinker bb = new ButtonBlinker(answerBtn, blink.getBlinkDuration(), blink.getTotalDuration(), colLst, blinkColors);
+				bb.start();
+			}
 
 			i++;
 			c++;
@@ -1242,6 +1275,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			persistentButtonsView.setVisibility(View.INVISIBLE);
 			this.settingsActive = true;
 			settingsView.setVisibility(View.VISIBLE);
+
 		} else {
 			this.settingsActive = false;
 			settingsView.setVisibility(View.INVISIBLE);

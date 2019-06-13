@@ -2,6 +2,7 @@ package nl.utwente.hmi.deenigmachildtabletapp.command;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -401,7 +402,27 @@ public class JSONCommandParser {
 				color = btn.get("color").asText();
 			}
 
-			TextButton tBtn = new TextButton(id, value, color);
+			//"blink":{"blinkDuration":1,"totalDuration":-1,"colors":["#f47a42","#a2f241","#40bff1"]}
+			Blink blink = null;
+			if(!btn.path("blink").isMissingNode()){
+				JsonNode b = btn.path("blink");
+
+				int blinkDuration = b.path("blinkDuration").asInt(1);
+				int totalDuration = b.path("totalDuration").asInt(0);
+
+				List<String> colors = new ArrayList<String>();
+				if(b.path("colors").isArray()){
+					for(JsonNode c : b.path("colors")){
+						if(c.isTextual()) {
+							colors.add(c.asText());
+						}
+					}
+				}
+
+				blink = new Blink(blinkDuration, totalDuration, colors);
+			}
+
+			TextButton tBtn = new TextButton(id, value, color, blink);
 
 			buttons.add(tBtn);
 		}
@@ -490,7 +511,27 @@ public class JSONCommandParser {
 				color = btn.get("color").asText();
 			}
 
-			TextButton tBtn = new TextButton(id, value, color);
+			//"blink":{"blinkDuration":1,"totalDuration":-1,"colors":["#f47a42","#a2f241","#40bff1"]}
+			Blink blink = null;
+			if(!btn.path("blink").isMissingNode()){
+				JsonNode b = btn.path("blink");
+
+				int blinkDuration = b.path("blinkDuration").asInt(1);
+				int totalDuration = b.path("totalDuration").asInt(0);
+
+				List<String> colors = new ArrayList<String>();
+				if(b.path("colors").isArray()){
+					for(JsonNode c : b.path("colors")){
+						if(c.isTextual()) {
+							colors.add(c.asText());
+						}
+					}
+				}
+
+				blink = new Blink(blinkDuration, totalDuration, colors);
+			}
+
+			TextButton tBtn = new TextButton(id, value, color, blink);
 
 			buttons.put(id, tBtn);
 		}

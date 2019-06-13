@@ -43,6 +43,7 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
 
     public void addListener(MiddlewareListener listener){
         if(isInitialized && middleware != null) {
+            Log.i("daniel", "Adding listener in communication thread");
             listeners.add(listener);
         }
     }
@@ -89,7 +90,7 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<Middleware> future = executor.submit(new ConnectionInitializer());
         try {
-            Log.i("daniel","Starting executor to initialise connection!");
+            Log.i("daniel","Starting executor to initialise connection");
             middleware = future.get(3, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             Log.i("daniel","Timeout");
@@ -111,12 +112,16 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
 
         executor.shutdownNow();
 
-        if(middleware != null && isInitialized){
-            middleware.addListener(this);
-        }
-
         while(this.running){
             try {
+                if(!isInitialized){
+                    if(middleware == null){
+                        Thread.sleep(100);
+                    } else {
+                        initializationCompleted();
+                    }
+                }
+
                 if(isInitialized && middleware != null) {
                     JsonNode nextMessage = sendQueue.take();
                     middleware.sendData(nextMessage);
@@ -130,8 +135,10 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
 
     @Override
     public void receiveData(JsonNode jsonNode) {
+        Log.d("daniel", "Got message 1: "+jsonNode.toString());
         if(running){
             for(MiddlewareListener ml : listeners){
+                Log.d("daniel", "Forwarding to thread listener");
                 ml.receiveData(jsonNode);
             }
         }
@@ -169,7 +176,8 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
             if(mw != null){
                 Log.i("daniel","Success!");
                 Thread.sleep(2000);
-                initializationCompleted();
+                Log.i("daniel","Registering this thread as listener to middleware");
+                mw.addListener(CommunicationThread.this);
             } else {
                 Log.i("daniel","Failure!");
                 initializationFailed();

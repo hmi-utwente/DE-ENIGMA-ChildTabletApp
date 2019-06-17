@@ -1,6 +1,5 @@
 package nl.utwente.hmi.deenigmachildtabletapp;
 
-import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
@@ -8,8 +7,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -17,9 +14,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -35,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import nl.utwente.hmi.deenigmachildtabletapp.command.*;
 import nl.utwente.hmi.deenigmachildtabletapp.communication.CommunicationManager;
+import nl.utwente.hmi.deenigmachildtabletapp.communication.ConnectionStatusListener;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.ButtonBlinker;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
 import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
@@ -49,7 +45,7 @@ import java.util.Map.Entry;
 
 import static nl.utwente.hmi.middleware.helpers.JsonNodeBuilders.object;
 
-public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
+public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, ConnectionStatusListener {
 
 	private MediaPlayer voicePlayer;
 	private MediaPlayer noisePlayer;
@@ -237,7 +233,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		new Thread(cr).start();
 
 		//finally, tell the middleware where to send incoming data
-		commMngr.addListener(cr);
+		commMngr.addMiddlewareListener(cr);
+
+		commMngr.addConnectionStatusListener(this);
 	}
 
 
@@ -288,6 +286,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	public void onStopTrackingTouch(SeekBar seekBar) {
 		continueBtn.setEnabled(true);
 	}
+
 
 
 	/**
@@ -359,6 +358,29 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		}
 	}
 
+
+	@Override
+	public void statusUpdate(ConnectionStatus status, String msg) {
+		runOnUiThread(new Runnable() {
+			private final ConnectionStatus cs = status;
+			private final String cMsg = msg;
+
+			@Override
+			public void run() {
+				if(cs == ConnectionStatus.CONNECTING){
+					connectionStatus.setText(cs.toString() + ": Connecting to "+selectedMiddleware.toString() +" in "+selectedMode+" mode - " + cMsg);
+				} else if(cs == ConnectionStatus.CONNECTED){
+					settingsActive = false;
+					settingsView.setVisibility(View.INVISIBLE);
+					connectBtn.setEnabled(true);
+					showAssignment(new ShowAssignment("init", "Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode", "", "", false));
+				} else if(cs == ConnectionStatus.ERROR) {
+					connectBtn.setEnabled(true);
+					connectionStatus.setText(cs.toString() + ": Connection failed...try again - " + cMsg);
+				}
+			}
+		});
+	}
 
 	/**
 	 * Displays a large countdown timer to the user in the middle of the screen
@@ -1243,16 +1265,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		connectBtn.setEnabled(false);
 		commMngr.restart();
 
-		if(!commMngr.isInitialized()){
-			connectBtn.setEnabled(true);
-			connectionStatus.setText("Connection failed...try again");
-		} else {
-			hideKeyboard(this);
-			settingsActive = false;
-			settingsView.setVisibility(View.INVISIBLE);
-			connectBtn.setEnabled(true);
-			showAssignment(new ShowAssignment("init", "Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode", "", "", false));
-		}
+		hideKeyboard(this);
 
 		//go back to fullscreen
 		setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -1266,7 +1279,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 	public void toggleConnectionSettings(View v){
 		if(!settingsActive) {
-			if(commMngr.isInitialized()){
+			if(commMngr.getConnectionStatus() == ConnectionStatus.CONNECTED){
 				connectionStatus.setText("Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode");
 			}
 			hideAllViews();
@@ -1279,7 +1292,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		} else {
 			this.settingsActive = false;
 			settingsView.setVisibility(View.INVISIBLE);
-			if(commMngr.isInitialized()) {
+			if(commMngr.getConnectionStatus() == ConnectionStatus.CONNECTED){
 				showAssignment(new ShowAssignment("init", "Connected to " + selectedMiddleware.toString() + " in " + selectedMode + " mode", "", "", false));
 			}
 		}

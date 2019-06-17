@@ -10,11 +10,8 @@ import java.util.List;
 import nl.utwente.hmi.deenigmachildtabletapp.MainActivity;
 import nl.utwente.hmi.middleware.MiddlewareListener;
 
-public class CommunicationManager {
+public class CommunicationManager implements ConnectionStatusListener {
 
-    private String IPAddress = "192.168.0.22";
-    private AvailableMiddlewares selectedMiddleware = AvailableMiddlewares.APOLLO;
-    private AvailableModes selectedMode = AvailableModes.ADULT;
 
     public enum AvailableMiddlewares {
         APOLLO, ROS
@@ -24,11 +21,17 @@ public class CommunicationManager {
         CHILD, ADULT
     }
 
+    private String IPAddress = "192.168.0.22";
+    private AvailableMiddlewares selectedMiddleware = AvailableMiddlewares.ROS;
+    private AvailableModes selectedMode = AvailableModes.ADULT;
+
     private CommunicationThread comms;
-    private List<MiddlewareListener> listeners;
+    private List<MiddlewareListener> middlewareListeners;
+    private List<ConnectionStatusListener> connectionStatusListeners;
 
     public CommunicationManager(){
-        this.listeners = new ArrayList<MiddlewareListener>();
+        this.middlewareListeners = new ArrayList<MiddlewareListener>();
+        this.connectionStatusListeners = new ArrayList<ConnectionStatusListener>();
     }
 
     public void updateConnectionSettings(AvailableModes selectedMode, AvailableMiddlewares selectedMiddleware, String IPAddress){
@@ -44,30 +47,32 @@ public class CommunicationManager {
 
         Log.i("daniel", "Starting communication thread");
         this.comms = new CommunicationThread(selectedMode, selectedMiddleware, IPAddress);
+        comms.addConnectionStatusListener(this);
+
+        for(ConnectionStatusListener csl : connectionStatusListeners){
+            Log.i("daniel", "Adding connection status listener to thread");
+            comms.addConnectionStatusListener(csl);
+        }
+
         new Thread(comms).start();
-
-        //now wait for the connection to be started
-        try {
-            comms.awaitInitialization();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            Log.e("daniel", "Error when starting communication thread");
-        }
-
-        if(comms.isInitialized()) {
-            Log.i("daniel", "Communication thread started successfully");
-
-            for (MiddlewareListener l : listeners) {
-                Log.i("daniel", "Adding listener to thread");
-                comms.addListener(l);
-            }
-        } else {
-            Log.i("daniel", "Communication thread was unable to start");
-        }
     }
 
-    public boolean isInitialized(){
-        return comms.isInitialized();
+    public void addConnectionStatusListener(ConnectionStatusListener csl){
+        connectionStatusListeners.add(csl);
+    }
+
+    @Override
+    public void statusUpdate(ConnectionStatus status, String msg) {
+        if(status == ConnectionStatus.CONNECTED){
+            Log.i("daniel", "Communication thread started successfully "+msg);
+
+            for (MiddlewareListener ml : middlewareListeners) {
+                Log.i("daniel", "Adding middleware listener to thread");
+                comms.addMiddlewareListener(ml);
+            }
+        } else if(status == ConnectionStatus.ERROR){
+            Log.e("daniel", "Error in communication thread: "+msg);
+        }
     }
 
     public void start(){
@@ -79,19 +84,23 @@ public class CommunicationManager {
     }
 
     public void sendData(JsonNode jn){
-        if(comms != null && comms.isInitialized()) {
+        if(comms != null && comms.getConnectionStatus() == ConnectionStatusListener.ConnectionStatus.CONNECTED) {
             comms.sendData(jn);
         }
     }
 
-    public synchronized void addListener(MainActivity.CommandReceiver listener){
-        //store the listener so we can automagically add it again in case of a restart
-        Log.i("daniel", "Adding listener to manager");
-        listeners.add(listener);
+    public ConnectionStatus getConnectionStatus(){
+        return comms.getConnectionStatus();
+    }
 
-        if(comms != null && comms.isInitialized()) {
-            Log.i("daniel", "Adding listener to thread");
-            comms.addListener(listener);
+    public synchronized void addMiddlewareListener(MainActivity.CommandReceiver middlewareListener){
+        //store the middlewareListener so we can automagically add it again in case of a restart
+        Log.i("daniel", "Adding middleware listener to manager");
+        middlewareListeners.add(middlewareListener);
+
+        if(comms != null && comms.getConnectionStatus() == ConnectionStatus.CONNECTED) {
+            Log.i("daniel", "Adding middleware listener to thread");
+            comms.addMiddlewareListener(middlewareListener);
         }
     }
 

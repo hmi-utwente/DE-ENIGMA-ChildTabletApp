@@ -29,23 +29,24 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
     private CommunicationManager.AvailableMiddlewares selectedMiddleware;
     protected BlockingQueue<JsonNode> sendQueue = null;
     private boolean running = true;
-    private List<MiddlewareListener> listeners;
+    private List<MiddlewareListener> middlewareListeners;
+    private List<ConnectionStatusListener> connectionStatusListeners;
     private Middleware middleware = null;
-    private boolean isInitialized = false;
+    private ConnectionStatusListener.ConnectionStatus currentStatus;
 
     public CommunicationThread(CommunicationManager.AvailableModes selectedMode, CommunicationManager.AvailableMiddlewares selectedMiddleware, String IPAddress) {
         this.sendQueue = new LinkedBlockingQueue();
         this.selectedMode = selectedMode;
         this.selectedMiddleware = selectedMiddleware;
         this.IPAddress = IPAddress;
-        listeners = new ArrayList<MiddlewareListener>();
+        middlewareListeners = new ArrayList<MiddlewareListener>();
+        connectionStatusListeners = new ArrayList<ConnectionStatusListener>();
+        setStatus(ConnectionStatusListener.ConnectionStatus.UNDEFINED, "");
     }
 
-    public void addListener(MiddlewareListener listener){
-        if(isInitialized && middleware != null) {
-            Log.i("daniel", "Adding listener in communication thread");
-            listeners.add(listener);
-        }
+    public void addMiddlewareListener(MiddlewareListener middlewareListener){
+        Log.i("daniel", "Adding middleware listener in communication thread");
+        middlewareListeners.add(middlewareListener);
     }
 
     public void sendData(JsonNode jn){
@@ -54,39 +55,29 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
 
     public void stop(){
         this.running = false;
-        isInitialized = false;
+        middlewareListeners.clear();
+        connectionStatusListeners.clear();
     }
 
-    /**
-     * Any other threads who are dependent on this connection being initialised should call this method after creating and starting the communication thread
-     * @throws InterruptedException
-     */
-    public synchronized void awaitInitialization() throws InterruptedException {
-        if(!isInitialized){
-            this.wait();
+    public void addConnectionStatusListener(ConnectionStatusListener csl){
+        Log.i("daniel", "Adding connection status listener in communication thread");
+        connectionStatusListeners.add(csl);
+    }
+
+    private void setStatus(ConnectionStatusListener.ConnectionStatus status, String msg){
+        Log.i("daniel", "Setting status "+status+" message: "+msg);
+        this.currentStatus = status;
+        for(ConnectionStatusListener csl : connectionStatusListeners){
+            csl.statusUpdate(status, msg);
         }
     }
 
-    public synchronized boolean isInitialized(){
-        return isInitialized;
-    }
-
-    private synchronized void initializationCompleted(){
-        isInitialized = true;
-
-        //make sure to notify all waiting threads when we have succesfully initialised the connection
-        this.notifyAll();
-    }
-
-    private synchronized void initializationFailed(){
-        isInitialized = false;
-        this.notifyAll();
+    public ConnectionStatusListener.ConnectionStatus getConnectionStatus(){
+        return currentStatus;
     }
 
     @Override
     public void run() {
-        isInitialized = false;
-
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<Middleware> future = executor.submit(new ConnectionInitializer());
         try {
@@ -99,9 +90,9 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
             //so as a workaround we just forget that this connection attempt is running in the background and dereference it...
             //future.cancel(true);
 
+            setStatus(ConnectionStatusListener.ConnectionStatus.ERROR, "Timeout while connecting");
             middleware = null;
             stop();
-            initializationFailed();
         } catch (InterruptedException e) {
             Log.i("daniel","Interrupted");
             e.printStackTrace();
@@ -113,18 +104,13 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
         executor.shutdownNow();
 
         while(this.running){
-            try {
-                if(!isInitialized){
-                    if(middleware == null){
-                        Thread.sleep(100);
-                    } else {
-                        initializationCompleted();
-                    }
-                }
-
-                if(isInitialized && middleware != null) {
+            try{
+                if(currentStatus == ConnectionStatusListener.ConnectionStatus.CONNECTED && middleware != null) {
                     JsonNode nextMessage = sendQueue.take();
                     middleware.sendData(nextMessage);
+                } else {
+                    //wait for the connection to be made
+                    Thread.sleep(100);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -137,7 +123,7 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
     public void receiveData(JsonNode jsonNode) {
         Log.d("daniel", "Got message 1: "+jsonNode.toString());
         if(running){
-            for(MiddlewareListener ml : listeners){
+            for(MiddlewareListener ml : middlewareListeners){
                 Log.d("daniel", "Forwarding to thread listener");
                 ml.receiveData(jsonNode);
             }
@@ -148,6 +134,8 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
 
         @Override
         public Middleware call() throws Exception {
+            setStatus(ConnectionStatusListener.ConnectionStatus.CONNECTING, "Attempting to establish connection");
+
             Middleware mw = null;
             if(selectedMiddleware == CommunicationManager.AvailableMiddlewares.APOLLO) {
                 try {
@@ -160,8 +148,9 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
                     }
                 }catch(StompJRuntimeException e){
                     Log.e("daniel","Got error while connecting to APOLLO: "+e.getMessage());
-                    initializationFailed();
+                    setStatus(ConnectionStatusListener.ConnectionStatus.ERROR, "Error while connecting: "+e.getMessage());
                     stop();
+                    return null;
                 }
             } else if(selectedMiddleware == CommunicationManager.AvailableMiddlewares.ROS){
                 if(selectedMode == CommunicationManager.AvailableModes.ADULT) {
@@ -178,9 +167,10 @@ public class CommunicationThread implements Runnable, MiddlewareListener {
                 Thread.sleep(2000);
                 Log.i("daniel","Registering this thread as listener to middleware");
                 mw.addListener(CommunicationThread.this);
+                setStatus(ConnectionStatusListener.ConnectionStatus.CONNECTED, "Connected successfully");
             } else {
                 Log.i("daniel","Failure!");
-                initializationFailed();
+                setStatus(ConnectionStatusListener.ConnectionStatus.ERROR, "Unable to initiate middleware");
             }
 
             return mw;

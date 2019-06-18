@@ -2,6 +2,8 @@ package nl.utwente.hmi.deenigmatabletapp;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private RadioButton childSelection;
 	private RadioButton adultSelection;
 
-	private EditText ipAddress;
+	private EditText ipAddressTxt;
 
 	private Button connectBtn;
 
@@ -132,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private boolean settingsActive;
 	private CommunicationManager.AvailableModes selectedMode;
 	private CommunicationManager.AvailableMiddlewares selectedMiddleware;
+	private String selectedIPAddress;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -167,9 +170,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		childSelection = (RadioButton)findViewById(R.id.radio_child);
 		adultSelection = (RadioButton)findViewById(R.id.radio_adult);
 
-		ipAddress = (EditText)findViewById(R.id.ipaddress);
+		ipAddressTxt = (EditText)findViewById(R.id.ipaddress);
 
 		connectBtn = (Button)findViewById(R.id.connect);
+
+		loadConnectionPreferences();
+		updateConnectionView();
 
 
 		//get the view elements we want to change for the assignment view
@@ -373,6 +379,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 					settingsActive = false;
 					settingsView.setVisibility(View.INVISIBLE);
 					connectBtn.setEnabled(true);
+					saveConnectionPreference();
 					showAssignment(new ShowAssignment("init", "Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode", "", "", false));
 				} else if(cs == ConnectionStatus.ERROR) {
 					connectBtn.setEnabled(true);
@@ -1258,9 +1265,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			selectedMiddleware = CommunicationManager.AvailableMiddlewares.ROS;
 		}
 
-		String ip = ipAddress.getText().toString();
+		selectedIPAddress = ipAddressTxt.getText().toString();
 
-		commMngr.updateConnectionSettings(selectedMode, selectedMiddleware, ip);
+		commMngr.updateConnectionSettings(selectedMode, selectedMiddleware, selectedIPAddress);
 
 		connectBtn.setEnabled(false);
 		commMngr.restart();
@@ -1279,6 +1286,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 	public void toggleConnectionSettings(View v){
 		if(!settingsActive) {
+			this.settingsActive = true;
+
 			if(commMngr.getConnectionStatus() == ConnectionStatus.CONNECTED){
 				connectionStatus.setText("Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode");
 			}
@@ -1286,9 +1295,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			setBackgroundColor(new SetBackgroundColor("#ffffff"));
 			buttonsView.setVisibility(View.INVISIBLE);
 			persistentButtonsView.setVisibility(View.INVISIBLE);
-			this.settingsActive = true;
-			settingsView.setVisibility(View.VISIBLE);
 
+			updateConnectionView();
+
+			settingsView.setVisibility(View.VISIBLE);
 		} else {
 			this.settingsActive = false;
 			settingsView.setVisibility(View.INVISIBLE);
@@ -1296,6 +1306,44 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 				showAssignment(new ShowAssignment("init", "Connected to " + selectedMiddleware.toString() + " in " + selectedMode + " mode", "", "", false));
 			}
 		}
+	}
+
+	private void updateConnectionView(){
+		Log.i("daniel", "Updating connection preferences screen");
+		if(selectedMode == CommunicationManager.AvailableModes.CHILD){
+			modeSelection.check(childSelection.getId());
+		} else if(selectedMode == CommunicationManager.AvailableModes.ADULT){
+			modeSelection.check(adultSelection.getId());
+		}
+
+		if(selectedMiddleware == CommunicationManager.AvailableMiddlewares.ROS){
+			middlewareSelection.check(ROSSelection.getId());
+		} else if(selectedMiddleware == CommunicationManager.AvailableMiddlewares.APOLLO){
+			middlewareSelection.check(APOLLOSelection.getId());
+		}
+
+		ipAddressTxt.setText(selectedIPAddress);
+	}
+
+	private void loadConnectionPreferences(){
+		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+		selectedMiddleware = CommunicationManager.AvailableMiddlewares.valueOf(prefs.getString("selectedMiddleware", "ROS"));
+		selectedMode = CommunicationManager.AvailableModes.valueOf(prefs.getString("selectedMode", "ADULT"));
+		selectedIPAddress = prefs.getString("ipAddress", "192.168.0.22");
+
+		Log.i("daniel", "Loading connection preferences");
+	}
+
+	private void saveConnectionPreference(){
+		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = prefs.edit();
+
+		editor.putString("selectedMode", selectedMode.toString());
+		editor.putString("selectedMiddleware", selectedMiddleware.toString());
+		editor.putString("ipAddress", selectedIPAddress);
+
+		Log.i("daniel", "Storing connection preferences");
+		editor.commit();
 	}
 
 	public static void hideKeyboard(Activity activity) {

@@ -1,7 +1,5 @@
-package nl.utwente.hmi.deenigmachildtabletapp.command;
+package nl.utwente.hmi.deenigmatabletapp.command;
 
-
-import android.graphics.Color;
 
 public class TextButton {
     private final String id;

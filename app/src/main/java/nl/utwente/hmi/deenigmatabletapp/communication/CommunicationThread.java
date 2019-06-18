@@ -1,4 +1,4 @@
-package nl.utwente.hmi.deenigmachildtabletapp.communication;
+package nl.utwente.hmi.deenigmatabletapp.communication;
 
 import android.util.Log;
 

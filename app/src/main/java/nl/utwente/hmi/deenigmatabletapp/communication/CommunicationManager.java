@@ -1,4 +1,4 @@
-package nl.utwente.hmi.deenigmachildtabletapp.communication;
+package nl.utwente.hmi.deenigmatabletapp.communication;
 
 import android.util.Log;
 
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.utwente.hmi.deenigmachildtabletapp.MainActivity;
+import nl.utwente.hmi.deenigmatabletapp.MainActivity;
 import nl.utwente.hmi.middleware.MiddlewareListener;
 
 public class CommunicationManager implements ConnectionStatusListener {

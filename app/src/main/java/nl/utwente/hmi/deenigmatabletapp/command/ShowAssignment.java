@@ -1,4 +1,4 @@
-package nl.utwente.hmi.deenigmachildtabletapp.command;
+package nl.utwente.hmi.deenigmatabletapp.command;
 
 public class ShowAssignment implements Command {
 

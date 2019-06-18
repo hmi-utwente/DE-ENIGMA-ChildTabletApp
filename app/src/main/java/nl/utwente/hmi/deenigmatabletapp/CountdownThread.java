@@ -1,4 +1,4 @@
-package nl.utwente.hmi.deenigmachildtabletapp;
+package nl.utwente.hmi.deenigmatabletapp;
 
 import android.widget.TextView;
 

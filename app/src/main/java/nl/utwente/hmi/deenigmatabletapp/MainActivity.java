@@ -1,4 +1,4 @@
-package nl.utwente.hmi.deenigmachildtabletapp;
+package nl.utwente.hmi.deenigmatabletapp;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -28,12 +28,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import nl.utwente.hmi.deenigmachildtabletapp.command.*;
-import nl.utwente.hmi.deenigmachildtabletapp.communication.CommunicationManager;
-import nl.utwente.hmi.deenigmachildtabletapp.communication.ConnectionStatusListener;
-import nl.utwente.hmi.deenigmachildtabletapp.widgets.ButtonBlinker;
-import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBar;
-import nl.utwente.hmi.deenigmachildtabletapp.widgets.VerticalSeekBarWrapper;
+import nl.utwente.hmi.deenigmatabletapp.command.*;
+import nl.utwente.hmi.deenigmatabletapp.communication.CommunicationManager;
+import nl.utwente.hmi.deenigmatabletapp.communication.ConnectionStatusListener;
+import nl.utwente.hmi.deenigmatabletapp.widgets.ButtonBlinker;
+import nl.utwente.hmi.deenigmatabletapp.widgets.VerticalSeekBar;
+import nl.utwente.hmi.deenigmatabletapp.widgets.VerticalSeekBarWrapper;
 import nl.utwente.hmi.middleware.MiddlewareListener;
 import nl.utwente.hmi.middleware.worker.AbstractWorker;
 

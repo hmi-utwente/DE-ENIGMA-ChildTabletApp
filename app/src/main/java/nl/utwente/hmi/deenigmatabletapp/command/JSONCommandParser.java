@@ -1,9 +1,8 @@
-package nl.utwente.hmi.deenigmachildtabletapp.command;
+package nl.utwente.hmi.deenigmatabletapp.command;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;

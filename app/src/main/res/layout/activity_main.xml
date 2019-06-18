@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="#FFFFFF"
-    tools:context="nl.utwente.hmi.deenigmachildtabletapp.MainActivity" >
+    tools:context="nl.utwente.hmi.deenigmatabletapp.MainActivity" >
 
 	<TextView
 		android:layout_width="22dp"

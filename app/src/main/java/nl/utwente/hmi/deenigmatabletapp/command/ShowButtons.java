@@ -1,7 +1,6 @@
-package nl.utwente.hmi.deenigmachildtabletapp.command;
+package nl.utwente.hmi.deenigmatabletapp.command;
 
 import java.util.List;
-import java.util.Map;
 
 public class ShowButtons implements Command {
 

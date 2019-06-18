@@ -1,6 +1,4 @@
-package nl.utwente.hmi.deenigmachildtabletapp.command;
-
-import java.util.Map;
+package nl.utwente.hmi.deenigmatabletapp.command;
 
 public class SetBackgroundColor implements Command {
 

@@ -1,4 +1,4 @@
-package nl.utwente.hmi.deenigmachildtabletapp.widgets;
+package nl.utwente.hmi.deenigmatabletapp.widgets;
 
 import android.content.res.ColorStateList;
 import android.os.Handler;

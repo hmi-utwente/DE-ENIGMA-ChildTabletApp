@@ -1,8 +1,6 @@
-This app is used both for the Child Tablet and the Wizard Tablet for the therapist.
+This app is used both for the Child tablet and the Wizard of Oz (Adult) tablet.
+The app can only be used together with our interaction software running on a computer: https://github.com/hmi-utwente/DE-ENIGMA-F2
+Currently it supports connecting through ROSBridge using Websockets or through Apollo/STOMP.
 
-There is line that needs to be changed in the AssignmentApplicaiton.java file, line 53.
-For the child app it should be:
-middleware = new STOMPMiddleware("192.168.1.62",61613,"/topic/CHtablet.command","/topic/tablet.feedback");
-
-For the wizard app it should be:
-middleware = new STOMPMiddleware("192.168.1.62",61613,"/topic/ADtablet.command","/topic/tablet.feedback");
+Requires a 9-10 inch tablet running Android 7 (or higher). 
+Tested on Samsung Galaxy Tab S2.

@@ -12,6 +12,7 @@
     tools:context="nl.utwente.hmi.deenigmatabletapp.MainActivity" >
 
 	<TextView
+		android:id="@+id/settings_dots"
 		android:layout_width="22dp"
 		android:layout_height="22dp"
 		android:gravity="center_horizontal"
@@ -134,6 +135,12 @@
 			android:layout_height="wrap_content"
 			android:layout_marginTop="22dp"
 			android:text="192.168.0.22"/>
+
+		<CheckBox android:id="@+id/checkbox_show_dots"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Show the settings dots in upper right corner"
+			android:checked="true"/>
 
 		<Button
 			android:id="@+id/connect"

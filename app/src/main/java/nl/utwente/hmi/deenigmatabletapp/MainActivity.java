@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static java.lang.Boolean.TRUE;
 import static nl.utwente.hmi.middleware.helpers.JsonNodeBuilders.object;
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, ConnectionStatusListener {
@@ -86,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private Button ballButtonsContinueButton;
 	private RelativeLayout ballButtonsView;
 
+	private TextView settingsDots;
+
 	private LinearLayout settingsView;
 	private TextView connectionStatus;
 
@@ -98,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private RadioButton adultSelection;
 
 	private EditText ipAddressTxt;
+
+	private CheckBox showDotsCB;
 
 	private Button connectBtn;
 
@@ -132,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private TextView highText;
 	private CommunicationManager commMngr;
 	private boolean settingsActive;
+	private boolean showDots;
 	private CommunicationManager.AvailableModes selectedMode;
 	private CommunicationManager.AvailableMiddlewares selectedMiddleware;
 	private String selectedIPAddress;
@@ -159,6 +165,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		backgroundView = (RelativeLayout) findViewById(R.id.background_view);
 
 		//for the settings screen
+		settingsDots = (TextView)findViewById(R.id.settings_dots);
+
 		settingsView = (LinearLayout)findViewById(R.id.settings_view);
 		connectionStatus = (TextView)findViewById(R.id.connectionStatus);
 
@@ -171,6 +179,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		adultSelection = (RadioButton)findViewById(R.id.radio_adult);
 
 		ipAddressTxt = (EditText)findViewById(R.id.ipaddress);
+
+		showDotsCB = (CheckBox)findViewById(R.id.checkbox_show_dots);
 
 		connectBtn = (Button)findViewById(R.id.connect);
 
@@ -380,6 +390,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 					settingsView.setVisibility(View.INVISIBLE);
 					connectBtn.setEnabled(true);
 					saveConnectionPreference();
+
+					if(showDots){
+						settingsDots.setVisibility(View.VISIBLE);
+					} else {
+						settingsDots.setVisibility(View.INVISIBLE);
+					}
+
 					showAssignment(new ShowAssignment("init", "Connected to "+selectedMiddleware.toString() +" in "+selectedMode+" mode", "", "", false));
 				} else if(cs == ConnectionStatus.ERROR) {
 					connectBtn.setEnabled(true);
@@ -1272,6 +1289,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		connectBtn.setEnabled(false);
 		commMngr.restart();
 
+		showDots = showDotsCB.isChecked();
+
 		hideKeyboard(this);
 
 		//go back to fullscreen
@@ -1323,10 +1342,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		}
 
 		ipAddressTxt.setText(selectedIPAddress);
+
+		showDotsCB.setChecked(showDots);
 	}
 
 	private void loadConnectionPreferences(){
 		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+		showDots = prefs.getBoolean("showDots", TRUE);
 		selectedMiddleware = CommunicationManager.AvailableMiddlewares.valueOf(prefs.getString("selectedMiddleware", "ROS"));
 		selectedMode = CommunicationManager.AvailableModes.valueOf(prefs.getString("selectedMode", "ADULT"));
 		selectedIPAddress = prefs.getString("ipAddress", "192.168.0.22");
@@ -1338,6 +1360,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = prefs.edit();
 
+		editor.putBoolean("showDots", showDots);
 		editor.putString("selectedMode", selectedMode.toString());
 		editor.putString("selectedMiddleware", selectedMiddleware.toString());
 		editor.putString("ipAddress", selectedIPAddress);

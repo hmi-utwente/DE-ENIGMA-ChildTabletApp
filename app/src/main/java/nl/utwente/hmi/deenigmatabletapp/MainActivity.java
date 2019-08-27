@@ -19,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -887,6 +888,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private void showImageButtonGrid(ShowImageButtonGrid ibg){
 		hideAllViews();
 
+		DisplayMetrics displayMetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+		int deviceWidth = displayMetrics.widthPixels;
+
 		//create a new vertical oriented layout, which will hold the text and buttons
 		LinearLayout linView = new LinearLayout(this);
 		linView.setOrientation(LinearLayout.VERTICAL);
@@ -919,7 +924,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 			int oWidth = imgFile.getIntrinsicWidth();
 			int oHeight = imgFile.getIntrinsicHeight();
-			int nWidth = 650;
+
+			//calculate width dynamically based on actual resolution of tablet, minus padding and margins
+			int nWidth = deviceWidth / 2 - 48 - 48 - 22;
 			double scaleFactor = (double) nWidth / oWidth;
 			int nHeight = (int) Math.round(oHeight * scaleFactor);
 

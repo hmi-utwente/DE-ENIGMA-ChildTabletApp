@@ -46,10 +46,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static android.util.TypedValue.COMPLEX_UNIT_PX;
 import static java.lang.Boolean.TRUE;
 import static nl.utwente.hmi.middleware.helpers.JsonNodeBuilders.object;
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, ConnectionStatusListener {
+
+	//samsung galaxy tab s2 has 1536 x 2048 resolution
+	private static final int ORIGINAL_RESOLUTION_WIDTH = 1536;
+	private static final int ORIGINAL_RESOLUTION_HEIGHT = 2048;
 
 	private MediaPlayer voicePlayer;
 	private MediaPlayer noisePlayer;
@@ -102,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private RadioButton adultSelection;
 
 	private EditText ipAddressTxt;
+	private EditText interfaceScalingTxt;
 
 	private CheckBox showDotsCB;
 
@@ -142,6 +148,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	private CommunicationManager.AvailableModes selectedMode;
 	private CommunicationManager.AvailableMiddlewares selectedMiddleware;
 	private String selectedIPAddress;
+	private int selectedInterfaceScaling;
+	private int deviceWidth;
+	private int deviceHeight;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -180,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		adultSelection = (RadioButton)findViewById(R.id.radio_adult);
 
 		ipAddressTxt = (EditText)findViewById(R.id.ipaddress);
+		interfaceScalingTxt = (EditText)findViewById(R.id.interface_scaling);
 
 		showDotsCB = (CheckBox)findViewById(R.id.checkbox_show_dots);
 
@@ -188,6 +198,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		loadConnectionPreferences();
 		updateConnectionView();
 
+		//store this device's screen resolution, to calculate the scaling appropriately (see functions getScaledPixelsWidth and Height)
+		DisplayMetrics displayMetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+		deviceWidth = displayMetrics.widthPixels;
+		deviceHeight = displayMetrics.heightPixels;
 
 		//get the view elements we want to change for the assignment view
 		assignmentView = (RelativeLayout) findViewById(R.id.assignment_view);
@@ -541,6 +556,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		hideAllViews();
 
 		assignmentTextView.setText(sa.getText());
+		assignmentTextView.setTextSize(COMPLEX_UNIT_PX,getScaledPixelsHeight(84));
 
 		if(!"".equals(sa.getImageFile())){
 			int imageResourceID = getApplicationContext().getResources().getIdentifier(sa.getImageFile(), "drawable", getApplicationContext().getPackageName());
@@ -811,8 +827,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		//create and add question and all answers to the interface
 		TextView q = new TextView(this);
 		q.setText(sb.getText());
-		q.setTextSize(22);
-		q.setPadding(100, 0, 0, 33);
+		q.setTextSize(COMPLEX_UNIT_PX,getScaledPixelsHeight(44));
+		q.setPadding(getScaledPixelsWidth(150), 0, 0, getScaledPixelsHeight(33));
 		LayoutParams qParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		linView.addView(q, qParams);
 
@@ -821,14 +837,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 			if("blankSpace".equals(tBtn.getText())){
 				Space space = new Space(this);
-				space.setMinimumHeight(32);
+				space.setMinimumHeight(getScaledPixelsHeight(32));
 				linView.addView(space);
 			} else if("textOnly".equals(id)) {
 				TextView txt = new TextView(this);
 				txt.setText(tBtn.getText());
-				txt.setTextSize(16);
+				txt.setTextSize(COMPLEX_UNIT_PX,getScaledPixelsHeight(32));
 				txt.setGravity(Gravity.CENTER);
-				txt.setPadding(0,0,0,20);
+				txt.setPadding(0,0,0,getScaledPixelsHeight(20));
 				txt.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
 				linView.addView(txt);
 			}else {
@@ -848,12 +864,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 				Button answerBtn = new Button(this);
 				answerBtn.setText(tBtn.getText());
 				answerBtn.setBackgroundTintList(colLst);
-				answerBtn.setTextSize(16);
-				answerBtn.setPadding(0, 26, 0, 26);
+				answerBtn.setTextSize(COMPLEX_UNIT_PX,getScaledPixelsHeight(32));
+				answerBtn.setPadding(0, getScaledPixelsHeight(22), 0, getScaledPixelsHeight(22));
 				answerBtn.setTag(id);
 				answerBtn.setOnClickListener(buttonSubmit);
 				LinearLayout.LayoutParams answerBtnParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-				answerBtnParams.setMargins(100, 5, 100, 0);
+				answerBtnParams.setMargins(getScaledPixelsWidth(150), getScaledPixelsHeight(5), getScaledPixelsWidth(150), 0);
 				//answerBtn.setLayoutParams(answerBtnParams);
 				linView.addView(answerBtn, answerBtnParams);
 
@@ -879,6 +895,29 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		buttonsView.setVisibility(View.VISIBLE);
 	}
 
+	/**
+	 * Scales the given width in pixels to a lower resolution screen
+	 * @param originalWidth the original width of an element in pixels
+	 * @return the scaled width in pixels according to the actual device's resolution
+	 */
+	private int getScaledPixelsWidth(int originalWidth){
+		double scaleFactor = ((double) deviceWidth / ORIGINAL_RESOLUTION_WIDTH) * ((double)selectedInterfaceScaling / 100);
+		int nWidth = (int) Math.round(originalWidth * scaleFactor);
+
+		return nWidth;
+	}
+
+	/**
+	 * Scales the given height in pixels to a lower resolution screen
+	 * @param originalHeight the original height of an element in pixels
+	 * @return the scaled height in pixels according to the actual device's resolution
+	 */
+	private int getScaledPixelsHeight(int originalHeight){
+		double scaleFactor = ((double) deviceHeight / ORIGINAL_RESOLUTION_HEIGHT) * ((double)selectedInterfaceScaling / 100);
+		int nHeight = (int) Math.round(originalHeight * scaleFactor);
+
+		return nHeight;
+	}
 
 	/**
 	 * Displays buttons to the user. The ShowButtons command contains a list of button texts and their return values.
@@ -887,10 +926,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 	 */
 	private void showImageButtonGrid(ShowImageButtonGrid ibg){
 		hideAllViews();
-
-		DisplayMetrics displayMetrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-		int deviceWidth = displayMetrics.widthPixels;
 
 		//create a new vertical oriented layout, which will hold the text and buttons
 		LinearLayout linView = new LinearLayout(this);
@@ -926,20 +961,20 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			int oHeight = imgFile.getIntrinsicHeight();
 
 			//calculate width dynamically based on actual resolution of tablet, minus padding and margins
-			int nWidth = deviceWidth / 2 - 48 - 48 - 22;
+			int nWidth = deviceWidth / 2 - getScaledPixelsWidth(20) - getScaledPixelsWidth(44);
 			double scaleFactor = (double) nWidth / oWidth;
 			int nHeight = (int) Math.round(oHeight * scaleFactor);
 
 			Button iBtn = new Button(this);
 			iBtn.setBackground(imgFile);
 			//iBtn.setText(button.getText());
-			iBtn.setTextSize(16);
+			iBtn.setTextSize(COMPLEX_UNIT_PX,getScaledPixelsHeight(32));
             iBtn.setPadding(0, 0, 0, 0);
 			iBtn.setTag(button.getId());
 			iBtn.setOnClickListener(buttonSubmit);
 
 			GridLayout.LayoutParams iBtnParams = new GridLayout.LayoutParams();
-			iBtnParams.setMargins(22, 142, 22, 22);
+			iBtnParams.setMargins(getScaledPixelsWidth(22), getScaledPixelsHeight(22), getScaledPixelsWidth(22), getScaledPixelsHeight(22));
 			iBtnParams.setGravity(Gravity.CENTER);
 			iBtnParams.columnSpec = GridLayout.spec(c);
 			iBtnParams.rowSpec = GridLayout.spec(r);
@@ -963,8 +998,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		//create and add question and all answers to the interface
 		TextView text = new TextView(this);
 		text.setText(ibg.getText());
-		text.setTextSize(42);
-		text.setPadding(0, 100, 0, 33);
+		text.setTextSize(COMPLEX_UNIT_PX,getScaledPixelsHeight(84));
+		text.setPadding(0, getScaledPixelsHeight(100), 0, getScaledPixelsHeight(33));
 		text.setGravity(Gravity.CENTER);
 		LayoutParams tParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 		linView.addView(text, tParams);
@@ -1020,19 +1055,19 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 			Button answerBtn = new Button(this);
 			answerBtn.setText(tBtn.getText());
 			answerBtn.setBackgroundTintList(colLst);
-			answerBtn.setTextSize(16);
-			answerBtn.setPadding(0, 26, 0, 26);
+			answerBtn.setTextSize(COMPLEX_UNIT_PX,getScaledPixelsHeight(32));
+			answerBtn.setPadding(0, getScaledPixelsHeight(26), 0, getScaledPixelsHeight(26));
 			answerBtn.setTag(button.getKey());
 			answerBtn.setOnClickListener(buttonSubmit);
 
 			gridLayout.addView(answerBtn, i);
 
 			GridLayout.LayoutParams answerBtnParams = new GridLayout.LayoutParams();
-			answerBtnParams.setMargins(5,5,5,5);
+			answerBtnParams.setMargins(getScaledPixelsWidth(2),getScaledPixelsHeight(2),getScaledPixelsWidth(2),getScaledPixelsHeight(2));
 			answerBtnParams.setGravity(Gravity.CENTER);
 			answerBtnParams.columnSpec = GridLayout.spec(c);
 			answerBtnParams.rowSpec = GridLayout.spec(r);
-			answerBtnParams.width = dp2px(200);
+			answerBtnParams.width = getScaledPixelsWidth(450);
 
 			answerBtn.setLayoutParams(answerBtnParams);
 
@@ -1059,13 +1094,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		persistentButtonsView.removeAllViews();
 		persistentButtonsView.addView(gridLayout, gridLayoutParams);
 		persistentButtonsView.setVisibility(View.VISIBLE);
-	}
-
-	public int dp2px(int dp) {
-		float density = getApplicationContext().getResources()
-				.getDisplayMetrics()
-				.density;
-		return Math.round((float) dp * density);
 	}
 
 	/**
@@ -1290,6 +1318,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		}
 
 		selectedIPAddress = ipAddressTxt.getText().toString();
+		try {
+			selectedInterfaceScaling = Integer.parseInt(interfaceScalingTxt.getText().toString());
+		} catch(NumberFormatException e){
+			Toast toast = Toast.makeText(getApplicationContext(),
+					"Interface scaling factor should be an int (percentage)... Defaulting to 100",
+					Toast.LENGTH_SHORT);
+			toast.show();
+			selectedInterfaceScaling = 100;
+		}
+
 
 		commMngr.updateConnectionSettings(selectedMode, selectedMiddleware, selectedIPAddress);
 
@@ -1349,6 +1387,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		}
 
 		ipAddressTxt.setText(selectedIPAddress);
+		interfaceScalingTxt.setText(Integer.toString(selectedInterfaceScaling));
 
 		showDotsCB.setChecked(showDots);
 	}
@@ -1359,6 +1398,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		selectedMiddleware = CommunicationManager.AvailableMiddlewares.valueOf(prefs.getString("selectedMiddleware", "ROS"));
 		selectedMode = CommunicationManager.AvailableModes.valueOf(prefs.getString("selectedMode", "ADULT"));
 		selectedIPAddress = prefs.getString("ipAddress", "192.168.0.22");
+		selectedInterfaceScaling = prefs.getInt("interfaceScaling", 100);
 
 		Log.i("daniel", "Loading connection preferences");
 	}
@@ -1371,6 +1411,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 		editor.putString("selectedMode", selectedMode.toString());
 		editor.putString("selectedMiddleware", selectedMiddleware.toString());
 		editor.putString("ipAddress", selectedIPAddress);
+		editor.putInt("interfaceScaling", selectedInterfaceScaling);
 
 		Log.i("daniel", "Storing connection preferences");
 		editor.commit();

@@ -82,8 +82,8 @@
 
 	<LinearLayout
 		android:id="@+id/settings_view"
-		android:paddingLeft="@dimen/activity_horizontal_margin"
-		android:paddingRight="@dimen/activity_horizontal_margin"
+		android:paddingLeft="50dp"
+		android:paddingRight="50dp"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="vertical"
@@ -129,12 +129,31 @@
 				android:text="APOLLO/STOMP"/>
 		</RadioGroup>
 
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="22dp"
+			android:text="IP address:"/>
 		<EditText
 			android:id="@+id/ipaddress"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginTop="22dp"
+			android:layout_marginTop="0dp"
 			android:text="192.168.0.22"/>
+
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="22dp"
+			android:text="Interface scaling factor:"/>
+		<EditText
+			android:id="@+id/interface_scaling"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="0dp"
+			android:text="1"/>
 
 		<CheckBox android:id="@+id/checkbox_show_dots"
 			android:layout_width="wrap_content"
